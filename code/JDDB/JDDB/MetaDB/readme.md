@@ -1,4 +1,4 @@
-# How to use MetaDB
+# How to use MetaDB （老艾）
 
 这里说一下明明，原来 tag 不清晰，现在明确一下 tag 值得是诊断的 tag，在 MetaDB 里面哪些 key value pair 叫做 label
 
@@ -11,7 +11,7 @@
   connection string is the connections string to a mongodb server. collection is the collection for the MetaDB.  
   connect befor any other action
 
-- disconnect
+- disconnect()  
   as name suggests.
 
 ## Query
@@ -25,14 +25,15 @@
   # add examples here
   ```
 
-- query(shot_list=None,filter=None)
+- query(shot_list=None,filter=None)  
   just like db.query(shotlist=None, filter=None)
 
-- query_valid(shotlist=None, label_true=None, label_false=None)
+- query_valid(shot_list=None, label_true=None, label_false=None)
   just like query_valid(shotlist=None, tag_true=None, tag_false=None)
 
-- query_range(label_list, lower=None, upper=None, shotlist=None)
-  这个有个小问题，这个智能查伦范围？能不能同时查询范围和诊断有效？
+- query_range(label_list, lower=None, upper=None, shot_list=None)
+  这个有个小问题，这个智能查伦范围？能不能同时查询范围和诊断有效？  
+  说明里面说一下可以级联query，，，，
 
 - count_label(shot_list, label_list, need_nd=False, show=True)
   just like db.tag_count(shotlist, taglist, needND=False, show=True)
