@@ -25,7 +25,7 @@ class ResamplingProcessor(BaseProcessor):
         new_time = np.linspace(start_time, new_end_time,
                                int((new_end_time - start_time) * self.params['SampleRate']) + 1)
         f = interp1d(signal.time, signal.data)
-        resampled_prop_dict = deepcopy(signal.prop_dict)
+        resampled_prop_dict = deepcopy(signal.attributes)
         resampled_prop_dict['SampleRate'] = self.params['SampleRate']
 
-        return Signal(data=f(new_time), prop_dict=resampled_prop_dict)
+        return Signal(data=f(new_time), attributes=resampled_prop_dict)
