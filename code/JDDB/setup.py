@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='JDDB',
+    name='jddb',
     version='0.1.0',
     description='J-TEXT Disruption Database Python package',
     packages=find_packages(),
