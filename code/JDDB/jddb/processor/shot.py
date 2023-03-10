@@ -111,7 +111,7 @@ class Shot(object):
             ValueError: if lengths of input tags and output tags do not match.
             ValueError: if lengths of output signals and output tags do not match.
         """
-        if not len(input_tags) == len(output_tags):
+        if len(input_tags) != len(output_tags):
             raise ValueError("Lengths of input tags and output tags do not match.")
         processor.params.update(self.labels)
         processor.params.update({"Shot": self.shot_no})
