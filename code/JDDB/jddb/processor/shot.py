@@ -1,6 +1,6 @@
 from ..file_repo import FileRepo
 from .signal import Signal
-from typing import Union, List
+from typing import Union
 from .base_processor import BaseProcessor
 
 
@@ -93,8 +93,8 @@ class Shot(object):
         else:
             raise ValueError("{} is not found in data.".format(tag))
 
-    def process(self, processor: BaseProcessor, input_tags: List[Union[str, List[str]]],
-                output_tags: List[Union[str, List[str]]]):
+    def process(self, processor: BaseProcessor, input_tags: list[Union[str, list[str]]],
+                output_tags: list[Union[str, list[str]]]):
         """Process one (or multiple) signals of the shot.
 
         Apply transformation to the signal(s) according to the processor.
@@ -105,8 +105,8 @@ class Shot(object):
 
         Args:
             processor (BaseProcessor): an instance of a subclassed BaseProcessor. The calculation is overrided in transform().
-            input_tags (List[Union[str, List[str]]]): input tag(s) to be processed.
-            output_tags (List[Union[str, List[str]]]): output tag(s) to be processed.
+            input_tags (list[Union[str, list[str]]]): input tag(s) to be processed.
+            output_tags (list[Union[str, list[str]]]): output tag(s) to be processed.
         Raises:
             ValueError: if lengths of input tags and output tags do not match.
             ValueError: if lengths of output signals and output tags do not match.
