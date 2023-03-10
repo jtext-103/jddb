@@ -133,7 +133,7 @@ class Shot(object):
             else:
                 raise ValueError("Lengths of output tags and signals do not match!")
 
-    def save(self, file_repo: FileRepo = None):
+    def save(self, save_repo: FileRepo = None):
         """Save the shot to specified file repo.
 
         Save all changes done before to disk space.
@@ -141,15 +141,15 @@ class Shot(object):
         changes will COVER the origin file. Please CHECK the new file repo to save.
 
         Args:
-            file_repo (FileRepo): file repo specified to save the shot. Default None.
+            save_repo (FileRepo): file repo specified to save the shot. Default None.
         """
-        if file_repo is not None and (file_repo.base_path != self.file_repo.base_path):
-            output_path = file_repo.create_shot(self.shot_no)
+        if save_repo is not None and (save_repo.base_path != self.file_repo.base_path):
+            output_path = save_repo.create_shot(self.shot_no)
 
             for tag in self.tags:
                 signal = self.get(tag)
-                file_repo.write_data_file(output_path, signal.data, signal.attributes)
-            file_repo.write_label_file(output_path, self.labels)
+                save_repo.write_data_file(output_path, signal.data, signal.attributes)
+            save_repo.write_label_file(output_path, self.labels)
 
         else:
             existing_tags = self.file_repo.get_tags(self.shot_no)
