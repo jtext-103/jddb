@@ -1,9 +1,7 @@
 import os
 import h5py
-import numpy as np
 import warnings
 from ..utils import replace_pattern
-
 
 class FileRepo:
     def __init__(self, base_path: str):
