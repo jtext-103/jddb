@@ -2,6 +2,8 @@ import os
 import h5py
 import warnings
 from ..utils import replace_pattern
+from ..meta_db import MetaDB
+
 
 class FileRepo:
     def __init__(self, base_path: str):
@@ -293,4 +295,12 @@ class FileRepo:
     def write_label(self, shot_no: int, label_dict: dict, overwrite=False):
         file_path = self.get_file(shot_no)
         self.write_data_file(file_path, label_dict, overwrite)
+
+    def sync_meta(self, meta_db: MetaDB, shot_list: list[int] = None, overwrite=False):
+        if shot_list is None:
+            shot_list = self.get_all_shots()
+        for shot in shot_list:
+            label_dict = meta_db.get_labels(shot)
+            del label_dict[shot]
+            self.write_label(shot, label_dict, overwrite)
 
