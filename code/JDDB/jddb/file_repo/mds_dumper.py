@@ -1,5 +1,6 @@
 import warnings
 import numpy as np
+from typing import List
 from MDSplus import connection
 from .file_repo import FileRepo
 import time as delay_time
@@ -19,7 +20,7 @@ class MDSDumper:
         if self.conn is not None:
             self.conn.disconnect()
 
-    def dumper(self, file_repo: FileRepo, shot_list: list[int], tag_list: list[str], overwrite=False):
+    def dumper(self, file_repo: FileRepo, shot_list: List[int], tag_list: List[str], overwrite=False):
         i = int(0)
         while True:
             if i > len(shot_list) - 1:
