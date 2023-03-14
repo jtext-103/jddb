@@ -1,4 +1,4 @@
 # %%
 # Here is a processor example
 
-# if calculate poloidal tearning mode frequency and amplitude.
+# it calculates poloidal tearing mode frequency and amplitude.
