@@ -13,15 +13,14 @@ from sklearn.metrics import roc_curve, auc
 
 class Roc:
 
-    def __init__(self, report_csv_path: str, result_csv_path: str):
+    def __init__(self, report_csv_path: str):
 
-        self.csv_path = csv_path
-        self.report = Report(report_csv_path)
+        self.report_csv_path = report_csv_path
 
     def roc(self, roc_file_path):
-        df_report = self.report.report
-        fpr = df_report.loc['FPR'].tolist()
-        tpr = df_report.loc['TPR'].tolist()
+        report = Report(self.report_csv_path).report
+        fpr = report.loc['FPR'].tolist()
+        tpr = report.loc['TPR'].tolist()
         tpr_ordered = []
         index = np.array(fpr).argsort()
         for i in index:
