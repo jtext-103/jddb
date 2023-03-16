@@ -37,23 +37,23 @@ class MDSDumper:
             i += 1
             try:
                 self.conn.openTree(self.tree_name, shot=shot)
-                for tag in tag_list:
-                    data_dict = dict()
-                    try:
-                        data_raw = np.array(self.conn.get(tag))
-                        time_raw = np.array(self.conn.get(r'DIM_OF(BUILD_PATH({})'.format(tag)))
-                        fs = len(time_raw) / (time_raw[-1] - time_raw[0]) if len(time_raw) > 1 else 0
-                        st = time_raw[0] if len(time_raw) > 1 else 0
-                        data_dict[tag] = data_raw
-                        attribute_dict = dict()
-                        attribute_dict["SampleRate"] = fs
-                        attribute_dict["StartTime"] = st
-                        file_repo.write_attributes(shot, tag, attribute_dict, overwrite)
-                        del attribute_dict
-                    except ValueError("Could not read data from {}".format(tag)):
-                        continue
-                    file_repo.write_data(shot, data_dict, overwrite)
-                    del data_dict
-                self.conn.disconnect()
             except ConnectionError("Could not open the tree of shot {}".format(shot)):
                 raise ConnectionError
+            for tag in tag_list:
+                try:
+                    data_raw = np.array(self.conn.get(tag))
+                    time_raw = np.array(self.conn.get(r'DIM_OF({})'.format(tag)))
+                except ValueError("Could not read data from {}".format(tag)):
+                    continue
+                fs = len(time_raw) / (time_raw[-1] - time_raw[0]) if len(time_raw) > 1 else 0
+                st = time_raw[0] if len(time_raw) > 1 else 0
+                data_dict_temp = dict()
+                data_dict_temp[tag] = data_raw
+                attribute_dict = dict()
+                attribute_dict["SampleRate"] = fs
+                attribute_dict["StartTime"] = st
+                file_repo.write_data(shot, data_dict_temp, overwrite)
+                file_repo.write_attributes(shot, tag, attribute_dict, overwrite)
+                del attribute_dict
+                del data_dict_temp
+            self.conn.disconnect()
