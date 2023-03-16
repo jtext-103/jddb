@@ -1,6 +1,9 @@
 import os
 import h5py
 import warnings
+
+from typing import List
+
 from ..utils import replace_pattern
 from ..meta_db import MetaDB
 
@@ -13,7 +16,7 @@ class FileRepo:
     def base_path(self):
         return self._base_path
 
-    def get_all_shots(self) -> list[int]:
+    def get_all_shots(self) -> List[int]:
         # get root path from base path
         if '$' in self._base_path:
             root_path = self._base_path.split('$')[0]
@@ -53,7 +56,7 @@ class FileRepo:
             else:
                 return ""
 
-    def get_files(self, shot_list: list[int] = None, create_empty=False) -> dict:
+    def get_files(self, shot_list: List[int] = None, create_empty=False) -> dict:
         file_path_dict = dict()
         if shot_list is None:
             shot_list = self.get_all_shots()
@@ -72,7 +75,7 @@ class FileRepo:
         except OSError:
             return None
 
-    def get_tag_list(self, shot_no: int) -> list[str]:
+    def get_tag_list(self, shot_no: int) -> List[str]:
         file = self._open_file(self.get_file(shot_no))
         if file:
             if file.get('data') is None:
@@ -87,7 +90,7 @@ class FileRepo:
         else:
             raise OSError('Shot {} does not exist.'.format(shot_no))
 
-    def read_data_file(self, file_path: str, tag_list: list[str] = None) -> dict:
+    def read_data_file(self, file_path: str, tag_list: List[str] = None) -> dict:
         data_dict = dict()
         file = self._open_file(file_path)
         if file:
@@ -106,12 +109,12 @@ class FileRepo:
         else:
             raise OSError("Invalid path given.")
 
-    def read_data(self, shot_no: int, tag_list: list[str] = None) -> dict:
+    def read_data(self, shot_no: int, tag_list: List[str] = None) -> dict:
         file_path = self.get_file(shot_no)
         data_dict = self.read_data_file(file_path, tag_list)
         return data_dict
 
-    def read_attributes(self, shot_no: int, tag: str, attribute_list: list[str] = None) -> dict:
+    def read_attributes(self, shot_no: int, tag: str, attribute_list: List[str] = None) -> dict:
         attribute_dict = dict()
         file = self._open_file(self.get_file(shot_no))
         if file:
@@ -132,7 +135,7 @@ class FileRepo:
         else:
             raise OSError("Invalid path given.")
 
-    def read_labels_file(self, file_path, label_list: list[str] = None) -> dict:
+    def read_labels_file(self, file_path, label_list: List[str] = None) -> dict:
         label_dict = dict()
         file = self._open_file(file_path)
         if file:
@@ -151,12 +154,12 @@ class FileRepo:
         else:
             raise OSError("Invalid path given.")
 
-    def read_labels(self, shot_no: int, label_list: list[str] = None) -> dict:
+    def read_labels(self, shot_no: int, label_list: List[str] = None) -> dict:
         file_path = self.get_file(shot_no)
         label_dict = self.read_labels_file(file_path, label_list)
         return label_dict
 
-    def remove_data_file(self, file_path: str, tag_list: list[str]):
+    def remove_data_file(self, file_path: str, tag_list: List[str]):
         file = self._open_file(file_path)
         if file:
             data_group = file.get('data')
@@ -172,11 +175,11 @@ class FileRepo:
         else:
             raise OSError("Invalid path given.")
 
-    def remove_data(self, shot_no: int, tag_list: list[str]):
+    def remove_data(self, shot_no: int, tag_list: List[str]):
         file_path = self.get_file(shot_no)
         self.remove_data_file(file_path, tag_list)
 
-    def remove_attributes(self, shot_no: int, tag: str, attribute_list: list[str]):
+    def remove_attributes(self, shot_no: int, tag: str, attribute_list: List[str]):
         file_path = self.get_file(shot_no)
         file = self._open_file(file_path)
         if file:
@@ -197,7 +200,7 @@ class FileRepo:
         else:
             raise OSError("Invalid path given.")
 
-    def remove_labels_file(self, file_path: str, label_list: list[str]):
+    def remove_labels_file(self, file_path: str, label_list: List[str]):
         file = self._open_file(file_path)
         if file:
             meta_group = file.get('meta')
@@ -213,7 +216,7 @@ class FileRepo:
         else:
             raise OSError("Invalid path given.")
 
-    def remove_labels(self, shot_no: int, label_list: list[str]):
+    def remove_labels(self, shot_no: int, label_list: List[str]):
         file_path = self.get_file(shot_no)
         self.remove_labels_file(file_path, label_list)
 
@@ -265,10 +268,12 @@ class FileRepo:
                     attribute_list = attribute_dict.keys()
                     for each_attr in attribute_list:
                         if each_attr in dataset.attrs.keys():
-                            if not overwrite:
+                            if overwrite:
+                                self.remove_attributes(shot_no, tag, [each_attr])
+                            else:
                                 warnings.warn("{} already exist.".format(each_attr), category=UserWarning)
                                 continue
-                            dataset.attrs[each_attr] = attribute_dict[each_attr]
+                        dataset.attrs.create(each_attr, attribute_dict[each_attr])
                     file.close()
         else:
             raise OSError("Invalid path given.")
@@ -284,10 +289,12 @@ class FileRepo:
             label_list = label_dict.keys()
             for label in label_list:
                 if label in meta_group.keys():
-                    if not overwrite:
+                    if overwrite:
+                        self.remove_labels_file(file_path, [label])
+                    else:
                         warnings.warn("{} already exist in meat group!".format(label), category=UserWarning)
                         continue
-                    meta_group[label] = label_dict[label]
+                meta_group.create_dataset(label, label_dict[label])
             file.close()
         else:
             raise OSError("Invalid path given.")
@@ -296,11 +303,10 @@ class FileRepo:
         file_path = self.get_file(shot_no)
         self.write_data_file(file_path, label_dict, overwrite)
 
-    def sync_meta(self, meta_db: MetaDB, shot_list: list[int] = None, overwrite=False):
+    def sync_meta(self, meta_db: MetaDB, shot_list: List[int] = None, overwrite=False):
         if shot_list is None:
             shot_list = self.get_all_shots()
         for shot in shot_list:
             label_dict = meta_db.get_labels(shot)
             del label_dict[shot]
             self.write_label(shot, label_dict, overwrite)
-
