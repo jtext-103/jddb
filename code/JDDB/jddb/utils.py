@@ -17,5 +17,6 @@ def replace_pattern(directory: str, shot: int) -> str:
         for each in match:
             number = 10 ** int(re.findall(r'\d+', each)[0])
             directory = directory.replace(each, '{}'.format(int(shot) // number))
+
     file_path = os.path.join(directory, '{}.hdf5'.format(shot))
     return file_path

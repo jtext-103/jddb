@@ -1,5 +1,6 @@
 import warnings
 import numpy as np
+from typing import List
 from MDSplus import connection
 from typing import List
 
