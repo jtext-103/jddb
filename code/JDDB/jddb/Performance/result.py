@@ -19,8 +19,8 @@ class Result:
         self.lucky_guess_threshold = np.nan
         self.csv_path = csv_path
         self.__header = ['shot_no', 'predicted_disruption', 'predicted_disruption_time', 'true_disruption',
-                         'true_disruption_time', 'warning_time', 'true_positive', 'false_positive', 'true_negative',
-                         'false_negative', 'tardy_alarm_threshold', 'lucky_guess_threshold']
+                         'true_disruption_time', 'warning_time', 'true_positive', 'false_positive',
+                         'tardy_alarm_threshold', 'lucky_guess_threshold']
         self.result = None
         self.y_pred = []
         self.y_true = []
@@ -56,6 +56,8 @@ class Result:
         self.lucky_guess_threshold = self.result.loc[1, 'lucky_guess_threshold']
 
     def save(self):
+        self.result.loc[1, ['lucky_guess_threshold']] = self.lucky_guess_threshold
+        self.result.loc[1, ['tardy_alarm_threshold']] = self.tardy_alarm_threshold
         self.result.to_excel(self.csv_path, index=False)
 
     def get_all_shots(self, include_no_truth=True):
@@ -168,8 +170,9 @@ class Result:
             predicted_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption'].tolist()[
                 0]
             true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
-            if (predicted_disruption == 1 and true_disruption == 1) and (
-                    self.tardy_alarm_threshold < warning_time and warning_time < self.lucky_guess_threshold):
+            if (predicted_disruption == 1 and true_disruption == 1):
+            # if (predicted_disruption == 1 and true_disruption == 1) and (
+            #             self.tardy_alarm_threshold < warning_time < self.lucky_guess_threshold):
                 y_pred.append(1)
             else:
                 y_pred.append(0)
@@ -262,7 +265,8 @@ class Result:
         if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
             self.get_y()
         for i in range(len(shot_no)):
-            warning_time_list.append(self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0])
+            if self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0] != -1:
+                warning_time_list.append(self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0])
         warning_time_list = np.array(warning_time_list)  # s#预测时间
 
         time_segments = pd.cut(warning_time_list, time_bins, right=False)
@@ -282,7 +286,7 @@ class Result:
         ax.set_title("warning_time_histogram", fontsize=15)
         plt.savefig(os.path.join(file_path, 'histogram_warning_time.png'), dpi=300)
 
-    def accumulate_warning_time_plot(self, output_dir: str, dis_shot_num):  #
+    def accumulate_warning_time_plot(self, output_dir: str, true_dis_num):  #
 
         matplotlib.use('TkAgg')
         plt.rcParams['font.family'] = 'Arial'
@@ -293,12 +297,13 @@ class Result:
         if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
             self.get_y()
         for i in range(len(shot_no)):
-            warning_time_list.append(self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0])
+            if self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0] != -1:
+                warning_time_list.append(self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0])
         warning_time = np.array(warning_time_list)  # ms->s#预测时间
         warning_time.sort()  #
         accu_frac = list()
         for i in range(len(warning_time)):
-            accu_frac.append((i + 1) / dis_shot_num * 100)
+            accu_frac.append((i + 1) / true_dis_num * 100)
         axis_width = 2
         major_tick_length = 12
         minor_tick_length = 6
@@ -309,7 +314,7 @@ class Result:
         ax.set_xlabel('Warning Time (s)', fontweight='bold')
         ax.set_ylabel('Accumulated Disruptions Predicted (%)', fontweight='bold')
 
-        ax.plot(warning_time[::-1], accu_frac, color="cornflowerblue",  linewidth=3.5)
+        ax.plot(warning_time[::-1], accu_frac, color="cornflowerblue", linewidth=3.5)
         ax.spines['bottom'].set_linewidth(axis_width)
         ax.spines['top'].set_linewidth(axis_width)
         ax.spines['left'].set_linewidth(axis_width)
@@ -323,4 +328,3 @@ class Result:
         ax.tick_params(which='minor', length=minor_tick_length)
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
-
