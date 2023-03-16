@@ -5,7 +5,7 @@ import warnings
 from typing import List
 
 from ..utils import replace_pattern
-from ..meta_db import MetaDB
+from ..meta_db import meta_db
 
 
 class FileRepo:
@@ -222,6 +222,9 @@ class FileRepo:
 
     def create_shot(self, shot_no: int) -> str:
         file_path = self.get_file(shot_no, ignore_none=True)
+        parent_dir = os.path.abspath(os.path.join(file_path,os.pardir))
+        if not os.path.exists(parent_dir):
+            os.makedirs(parent_dir)
         try:
             file = h5py.File(file_path, 'x')
             file.close()
@@ -303,7 +306,7 @@ class FileRepo:
         file_path = self.get_file(shot_no)
         self.write_data_file(file_path, label_dict, overwrite)
 
-    def sync_meta(self, meta_db: MetaDB, shot_list: List[int] = None, overwrite=False):
+    def sync_meta(self, meta_db: meta_db, shot_list: List[int] = None, overwrite=False):
         if shot_list is None:
             shot_list = self.get_all_shots()
         for shot in shot_list:
