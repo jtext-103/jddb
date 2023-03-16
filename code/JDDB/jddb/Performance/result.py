@@ -1,3 +1,4 @@
+import math
 import pandas as pd
 import os
 from typing import Optional, List
@@ -37,6 +38,8 @@ class Result:
                                                                                 self.lucky_guess_threshold]
         self.result = df_result
         self.save()
+    #result.tardy_alarm_threshold = 0.3
+    #result.lucky_guess_threshold = 0.02
 
     def read(self):
 
@@ -133,19 +136,13 @@ class Result:
                 self.result[self.result.shot_no == shot_no[i]].index[0], ['true_disruption', 'true_disruption_time']] = \
                 [true_disruption[i], true_disruption_time[i]]
 
-    def tardy_alarm_threshold(self, tardy_alarm_threshold):
-        self.tardy_alarm_threshold = tardy_alarm_threshold
-
-    def lucky_guess_threshold(self, lucky_guess_threshold):
-        self.lucky_guess_threshold = lucky_guess_threshold
-
     def get_y(self):
 
         # in put threshold before call judge_y_pred
         # check threshold
         # compute warning time
         # compute y_pred
-        if (self.tardy_alarm_threshold or self.lucky_guess_threshold) is None:
+        if math.isnan(self.tardy_alarm_threshold) or math.isnan(self.lucky_guess_threshold):
             raise ValueError(
                 "tardy_alarm_threshold is :{} , lucky_guess_threshold is :{}, fulfill ".format(
                     self.tardy_alarm_threshold, self.lucky_guess_threshold))
@@ -172,20 +169,19 @@ class Result:
     def get_y_pred(self):
         y_pred = []
         shot_no = self.shot_no
-        threshhold_ms = self.tardy_alarm_threshold - self.lucky_guess_threshold
+
         for i in range(len(shot_no)):
             warning_time = self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0]
             predicted_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption'].tolist()[
                 0]
             true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
             if (predicted_disruption == 1 and true_disruption == 1) and (
-                    0 <= warning_time and warning_time < threshhold_ms):
+                    self.tardy_alarm_threshold < warning_time and warning_time < self.lucky_guess_threshold):
                 y_pred.append(1)
             else:
                 y_pred.append(0)
                 self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
-            self.y_true.append(
-                self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0])
+
         self.y_pred = y_pred
 
     def get_y_true(self):
@@ -260,8 +256,9 @@ class Result:
         recall = recall_score(y_true=self.y_true, y_pred=self.y_pred, average='macro')
         return recall
 
-    def warning_time_histogram(self, file_path: str, time_bins: List[str]):
-
+    def warning_time_histogram(self, file_path: str, time_bins: List[float]):
+        # file_path is the path to save .png
+        # time_bins is a time endpoint list
         matplotlib.use('TkAgg')
         plt.style.use("ggplot")
         plt.rcParams['font.family'] = 'Arial'
@@ -319,7 +316,7 @@ class Result:
         ax.set_xlabel('Warning Time (s)', fontweight='bold')
         ax.set_ylabel('Accumulated Disruptions Predicted (%)', fontweight='bold')
 
-        ax.plot(warning_time[::-1], accu_frac, linewidth=3.5)
+        ax.plot(warning_time[::-1], accu_frac, color="cornflowerblue",  linewidth=3.5)
         ax.spines['bottom'].set_linewidth(axis_width)
         ax.spines['top'].set_linewidth(axis_width)
         ax.spines['left'].set_linewidth(axis_width)
@@ -337,4 +334,8 @@ class Result:
 
 if __name__ == '__main__':
     result = Result("G:\datapractice\\test\\test.xlsx")
+    # result.tardy_alarm_threshold = 0.3
+    # result.lucky_guess_threshold = 0.02
     result.get_y()
+    # result.get_y_pred()
+    # result.get_y_true()
