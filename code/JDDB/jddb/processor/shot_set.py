@@ -2,7 +2,7 @@ from __future__ import annotations
 from ..file_repo import FileRepo
 from .base_processor import BaseProcessor
 from .shot import Shot
-from typing import Union
+from typing import Union, List
 
 
 class ShotSet(object):
@@ -11,12 +11,12 @@ class ShotSet(object):
 
     Args:
         file_repo (FileRepo): the file repo the shot set belongs to.
-        shot_list (list[int]): shot list within the shot set.
+        shot_list (List[int]): shot list within the shot set.
     """
-    def __init__(self, file_repo: FileRepo, shot_list: list[int] = None):
+    def __init__(self, file_repo: FileRepo, shot_list: List[int] = None):
         self._file_repo = file_repo
         if shot_list is None:
-            self._shot_list = file_repo.shot_list
+            self._shot_list = self._file_repo.get_all_shots()
         else:
             self._shot_list = shot_list
 
@@ -40,14 +40,14 @@ class ShotSet(object):
         """
         return Shot(shot_no, self.file_repo)
 
-    def remove(self, tags: list[str], shot_filter: list[int] = None, keep: bool = False, save_repo: FileRepo = None) -> ShotSet:
+    def remove(self, tags: List[str], shot_filter: List[int] = None, keep: bool = False, save_repo: FileRepo = None) -> ShotSet:
         """Remove (or keep) existing signal(s) from the shots within the shot filter.
 
         The changes removed WILL be saved immediately by calling this method.
 
         Args:
-            tags (list[str]): tags of signals to be removed (or kept).
-            shot_filter (list[int]): shot files to be processed within the shot set. If None, process all shots within the shot set. Default None.
+            tags (List[str]): tags of signals to be removed (or kept).
+            shot_filter (List[int]): shot files to be processed within the shot set. If None, process all shots within the shot set. Default None.
             keep (bool): whether to keep the tags or not. Default False.
             save_repo (FileRepo): file repo specified to save the shots. Default None.
         Returns:
@@ -64,17 +64,17 @@ class ShotSet(object):
         else:
             return ShotSet(save_repo, shot_filter)
 
-    def process(self, processor: BaseProcessor, input_tags: list[Union[str, list[str]]], output_tags: list[Union[str, list[str]]],
-                shot_filter: list[int] = None, save_repo: FileRepo = None) -> ShotSet:
+    def process(self, processor: BaseProcessor, input_tags: List[Union[str, List[str]]], output_tags: List[Union[str, List[str]]],
+                shot_filter: List[int] = None, save_repo: FileRepo = None) -> ShotSet:
         """Process one (or several) signal(s) of the shots within the shot filter.
 
         The changes WILL be saved immediately by calling this method.
 
         Args:
             processor (BaseProcessor): an instance of a subclassed BaseProcessor.
-            input_tags (list[Union[str, list[str]]]): input tag(s) to be processed.
-            output_tags (list[Union[str, list[str]]]): output tag(s) to be processed.
-            shot_filter (list[int]): shot files to be processed within the shot set. If None, process all shots within the shot set. Default None.
+            input_tags (List[Union[str, List[str]]]): input tag(s) to be processed.
+            output_tags (List[Union[str, List[str]]]): output tag(s) to be processed.
+            shot_filter (List[int]): shot files to be processed within the shot set. If None, process all shots within the shot set. Default None.
             save_repo (FileRepo): file repo specified to save the shots. Default None.
         Returns:
             ShotSet: a new instance (or the previous instance itself) according to the base path of save_repo.

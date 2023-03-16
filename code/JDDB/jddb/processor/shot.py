@@ -1,6 +1,6 @@
 from ..file_repo import FileRepo
 from .signal import Signal
-from typing import Union
+from typing import Union, List
 from .base_processor import BaseProcessor
 
 
@@ -20,7 +20,7 @@ class Shot(object):
         self._file_repo = file_repo
         self._shot_no = shot_no
         self.__new_signals = dict()
-        self.__original_tags = file_repo.get_tags(self.shot_no)
+        self.__original_tags = file_repo.get_tag_list(self.shot_no)
         self.labels = file_repo.read_labels(self.shot_no)
 
     @property
@@ -49,12 +49,12 @@ class Shot(object):
         """
         self.__new_signals[tag] = signal
 
-    def remove(self, tags: Union[str, list[str]], keep: bool = False):
+    def remove(self, tags: Union[str, List[str]], keep: bool = False):
         """Remove (or keep) existing signals from the shot.
         The method DOES NOT change any file until save() is called.
 
         Args:
-            tags (Union[str, list[str]]): name(s) of the signal(s) to be removed (or kept)
+            tags (Union[str, List[str]]): name(s) of the signal(s) to be removed (or kept)
             keep (bool): whether to remove the signals or not. Default False.
         Raises:
             ValueError: if any of the signal(s) is not found in the shot.
@@ -89,12 +89,12 @@ class Shot(object):
             return self.__new_signals[tag]
         elif tag in self.__original_tags:
             return Signal(data=self.file_repo.read_data(self.shot_no, [tag])[tag],
-                          attributes=self.file_repo.get_attr(self.shot_no))
+                          attributes=self.file_repo.read_attributes(self.shot_no, tag))
         else:
             raise ValueError("{} is not found in data.".format(tag))
 
-    def process(self, processor: BaseProcessor, input_tags: list[Union[str, list[str]]],
-                output_tags: list[Union[str, list[str]]]):
+    def process(self, processor: BaseProcessor, input_tags: List[Union[str, List[str]]],
+                output_tags: List[Union[str, List[str]]]):
         """Process one (or multiple) signals of the shot.
 
         Apply transformation to the signal(s) according to the processor.
@@ -105,8 +105,8 @@ class Shot(object):
 
         Args:
             processor (BaseProcessor): an instance of a subclassed BaseProcessor. The calculation is overrided in transform().
-            input_tags (list[Union[str, list[str]]]): input tag(s) to be processed.
-            output_tags (list[Union[str, list[str]]]): output tag(s) to be processed.
+            input_tags (List[Union[str, List[str]]]): input tag(s) to be processed.
+            output_tags (List[Union[str, List[str]]]): output tag(s) to be processed.
         Raises:
             ValueError: if lengths of input tags and output tags do not match.
             ValueError: if lengths of output signals and output tags do not match.
@@ -145,20 +145,25 @@ class Shot(object):
         """
         if save_repo is not None and (save_repo.base_path != self.file_repo.base_path):
             output_path = save_repo.create_shot(self.shot_no)
-
+            data_dict = dict()
             for tag in self.tags:
                 signal = self.get(tag)
-                save_repo.write_data_file(output_path, signal.data, signal.attributes)
+                data_dict[tag] = signal.data
+            save_repo.write_data_file(output_path, data_dict)
+            for tag in self.tags:
+                save_repo.write_attributes(self.shot_no, tag, self.get(tag).attributes)
             save_repo.write_label_file(output_path, self.labels)
 
         else:
-            existing_tags = self.file_repo.get_tags(self.shot_no)
+            existing_tags = self.file_repo.get_tag_list(self.shot_no)
             tags_to_remove = [r_tag for r_tag in existing_tags if r_tag not in self.tags]
-            tags_to_update = list(set(self.__new_signals.keys()) & set(existing_tags))
 
-            self.file_repo.remove_data(self.shot_no, tags_to_remove+tags_to_update)
+            self.file_repo.remove_data(self.shot_no, tags_to_remove)
+            data_dict = dict()
 
-            for w_tag, w_signal in self.__new_signals.items():
-                self.file_repo.write_data(self.shot_no, w_signal.data, w_signal.attributes)
-
+            for tag, signal in self.__new_signals.items():
+                data_dict[tag] = signal.data
+            self.file_repo.write_data(self.shot_no, data_dict, overwrite=True)
+            for tag, signal in self.__new_signals.items():
+                self.file_repo.write_attributes(self.shot_no, tag, signal.attributes, overwrite=True)
             self.file_repo.write_label(self.shot_no, self.labels)
