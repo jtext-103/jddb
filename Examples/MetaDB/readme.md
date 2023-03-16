@@ -5,7 +5,6 @@ The mongodb dump file here is a MongoDB Collection dump of a MetaDB of J-TEXT.
 This file is created wiht mongdump.....
 
 ```bash
-# 老艾，你和大家商量一下确定dump出哪些炮，dump 20-30炮吧
 mongodump --db your_database_name --collection your_collection_name --query '{ your_query }'
 ```
 
@@ -17,10 +16,10 @@ To restore a MetaDB on your machine:
 
 Install MongoDB (version>?) and then
 
-use(下面是 mongorestor 的命令)，老艾你补全并测试一下
+use
 
 ```bash
-
+mongorestore --host=localhost --port 8017 -u JDDBUser -p ***** --db JDDB --collection Labels --dir .../Labels.bson
 ```
 
 to restore the dumped data to you mongodb server
