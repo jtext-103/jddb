@@ -38,8 +38,6 @@ class Result:
                                                                                 self.lucky_guess_threshold]
         self.result = df_result
         self.save()
-    #result.tardy_alarm_threshold = 0.3
-    #result.lucky_guess_threshold = 0.02
 
     def read(self):
 
@@ -147,11 +145,6 @@ class Result:
                 "tardy_alarm_threshold is :{} , lucky_guess_threshold is :{}, fulfill ".format(
                     self.tardy_alarm_threshold, self.lucky_guess_threshold))
         self.shot_no = self.get_all_shots(include_no_truth=False)
-
-        "compute warning time"
-
-        "compute y_pred"
-
         self.get_warning_time()
         self.get_y_pred()
         self.get_y_true()
@@ -278,13 +271,13 @@ class Result:
 
         fig, ax = plt.subplots(figsize=(10, 7))
         ax.bar(
-            x=counts.index.astype(str),  # Matplotlib自动将非数值变量转化为x轴坐标
-            height=counts,  # 柱子高度，y轴坐标
+            x=counts.index.astype(str),
+            height=counts,
             width=0.2,
-            align="center",  # 柱子的对齐方式，'center' or 'edge'
-            color="cornflowerblue",  # 柱子颜色
-            edgecolor="darkblue",  # 柱子边框的颜色
-            linewidth=2.0  # 柱子边框线的大小
+            align="center",
+            color="cornflowerblue",
+            edgecolor="darkblue",
+            linewidth=2.0
         )
         ax.set_title("warning_time_histogram", fontsize=15)
         plt.savefig(os.path.join(file_path, 'histogram_warning_time.png'), dpi=300)
@@ -331,11 +324,3 @@ class Result:
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
-
-if __name__ == '__main__':
-    result = Result("G:\datapractice\\test\\test.xlsx")
-    # result.tardy_alarm_threshold = 0.3
-    # result.lucky_guess_threshold = 0.02
-    result.get_y()
-    # result.get_y_pred()
-    # result.get_y_true()
