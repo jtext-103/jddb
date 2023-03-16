@@ -25,6 +25,7 @@ class Result:
         self.y_pred = []
         self.y_true = []
         self.shot_no = []
+        self.ignore_thresholds = False
         if os.path.exists(csv_path):
             self.read()
         else:
@@ -173,10 +174,12 @@ class Result:
             if predicted_disruption == 1 and true_disruption == 1:
                 if self.tardy_alarm_threshold < warning_time < self.lucky_guess_threshold:
                     y_pred.append(1)
+                else:
+                    if self.ignore_thresholds is False:
+                        self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
             else:
                 y_pred.append(0)
                 self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
-
         self.y_pred = y_pred
 
     def get_y_true(self):
@@ -327,3 +330,4 @@ class Result:
         ax.tick_params(which='minor', length=minor_tick_length)
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
+
