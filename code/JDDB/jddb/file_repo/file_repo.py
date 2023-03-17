@@ -311,5 +311,5 @@ class FileRepo:
             shot_list = self.get_all_shots()
         for shot in shot_list:
             label_dict = meta_db.get_labels(shot)
-            del label_dict[shot]
+            del label_dict['shot']
             self.write_label(shot, label_dict, overwrite)
