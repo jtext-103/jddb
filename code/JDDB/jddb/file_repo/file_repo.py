@@ -304,7 +304,7 @@ class FileRepo:
 
     def write_label(self, shot_no: int, label_dict: dict, overwrite=False):
         file_path = self.get_file(shot_no)
-        self.write_data_file(file_path, label_dict, overwrite)
+        self.write_label_file(file_path, label_dict, overwrite)
 
     def sync_meta(self, meta_db: meta_db, shot_list: List[int] = None, overwrite=False):
         if shot_list is None:
