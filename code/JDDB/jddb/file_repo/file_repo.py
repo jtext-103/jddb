@@ -297,7 +297,7 @@ class FileRepo:
                     else:
                         warnings.warn("{} already exist in meat group!".format(label), category=UserWarning)
                         continue
-                meta_group.create_dataset(label, label_dict[label])
+                meta_group.create_dataset(label, data=label_dict[label])
             file.close()
         else:
             raise OSError("Invalid path given.")
