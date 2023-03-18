@@ -127,7 +127,7 @@ class Shot(object):
             if isinstance(o_tag, str) and isinstance(new_signal, Signal):
                 self.update(o_tag, new_signal)
 
-            elif isinstance(o_tag, list) and isinstance(new_signal, list):
+            elif isinstance(o_tag, list) and isinstance(new_signal, tuple):
                 if len(o_tag) != len(new_signal):
                     raise ValueError("Lengths of output tags and signals do not match!")
                 for idx, each_signal in enumerate(new_signal):
