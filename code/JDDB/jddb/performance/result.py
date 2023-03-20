@@ -171,14 +171,15 @@ class Result:
             predicted_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption'].tolist()[
                 0]
             true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
-            if predicted_disruption == 1 and true_disruption == 1:
-                if self.ignore_thresholds is False:
-                    self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
-                    y_pred.append(1)
-                elif self.tardy_alarm_threshold < warning_time < self.lucky_guess_threshold:
+            if predicted_disruption == 1:
+                if self.ignore_thresholds is True:
                     y_pred.append(1)
                 else:
-                    y_pred.append(0)
+                    if self.tardy_alarm_threshold < warning_time < self.lucky_guess_threshold:
+                        y_pred.append(1)
+                    else:
+                        y_pred.append(0)
+                        self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
             else:
                 y_pred.append(0)
                 self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
@@ -198,8 +199,9 @@ class Result:
         # whether self.shot_no = shot_no
         # get y_pred, shot_no
         # compute warning_time, true_positive, false_positive
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
-            self.get_y()
+        # if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
+        #     self.get_y()
+        self.get_y()
         shot_no = self.shot_no
         y_pred = self.y_pred
 
@@ -338,9 +340,9 @@ if __name__ == '__main__':
 
 
     result.tardy_alarm_threshold = 0.02
-    result.lucky_guess_threshold = 0.3
-    result.get_y()
+    result.lucky_guess_threshold = 0.2
+    # result.get_y()
     result.calc_metrics()
-    result.get_accuracy()
-    result.get_precision()
-    result.confusion_matrix()
+    # result.get_accuracy()
+    # result.get_precision()
+    tp, fn, fp, tn = result.confusion_matrix()

@@ -86,7 +86,7 @@ class Report:
             if len(err_list) > 0:
                 raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
 
-if __name__ == '__main__':
-    report = Report("G:\datapractice\\test\\report.xlsx")
-    report.report_file()
-    report.add("G:\datapractice\\test\\test.xlsx", ["test"], 0.02, 0.3)
+# if __name__ == '__main__':
+#     report = Report("G:\datapractice\\test\\report.xlsx")
+#     report.report_file()
+#     report.add("G:\datapractice\\test\\test.xlsx", ["test"], 0.02, 0.3)
