@@ -35,7 +35,7 @@ class Result:
         # add header
         # set property
         df_result = pd.DataFrame(columns=self.__header)
-        df_result.loc[1, ['tardy_alarm_threshold', 'lucky_guess_threshold']] = [self.tardy_alarm_threshold,
+        df_result.loc[0, ['tardy_alarm_threshold', 'lucky_guess_threshold']] = [self.tardy_alarm_threshold,
                                                                                 self.lucky_guess_threshold]
         self.result = df_result
         self.save()
@@ -57,8 +57,8 @@ class Result:
         self.lucky_guess_threshold = self.result.loc[1, 'lucky_guess_threshold']
 
     def save(self):
-        self.result.loc[1, ['lucky_guess_threshold']] = self.lucky_guess_threshold
-        self.result.loc[1, ['tardy_alarm_threshold']] = self.tardy_alarm_threshold
+        self.result.loc[0, ['lucky_guess_threshold']] = self.lucky_guess_threshold
+        self.result.loc[0, ['tardy_alarm_threshold']] = self.tardy_alarm_threshold
         self.result.to_excel(self.csv_path, index=False)
 
     def get_all_shots(self, include_no_truth=True):
@@ -113,7 +113,7 @@ class Result:
 
         self.check_repeated(shot_no)
         for i in range(len(shot_no)):
-            row_index = len(self.result) + 1  # 当前excel内容有几行
+            row_index = len(self.result)  # 当前excel内容有几行
             if self.result.loc[self.result.shot_no == shot_no[i], 'predited_disruption'].tolist()[0] == 0:
                 predicted_disruption_time[i] = -1
             self.result.loc[row_index, ['shot_no', 'predited_disruption', 'predicted_disruption_time']] = \
@@ -159,8 +159,15 @@ class Result:
                 self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption_time'].tolist()[0]
             true_disruption_time = \
                 self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption_time'].tolist()[0]
-            self.result.loc[self.result.shot_no == shot_no[
-                i], 'warning_time'] = true_disruption_time - predicted_disruption_time
+            predicted_disruption = \
+                self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption'].tolist()[0]
+            if true_disruption_time == -1 and predicted_disruption == 1:
+                self.result.loc[self.result.shot_no == shot_no[
+                    i], 'warning_time'] = predicted_disruption_time
+            else:
+                self.result.loc[self.result.shot_no == shot_no[
+                    i], 'warning_time'] = true_disruption_time - predicted_disruption_time
+
 
     def get_y_pred(self):
         y_pred = []
@@ -170,12 +177,15 @@ class Result:
             warning_time = self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0]
             predicted_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption'].tolist()[
                 0]
-            true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
-            if predicted_disruption == 1 and true_disruption == 1:
-                if self.tardy_alarm_threshold < warning_time < self.lucky_guess_threshold:
+            # true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
+            if predicted_disruption == 1:
+                if self.ignore_thresholds is True:
                     y_pred.append(1)
                 else:
-                    if self.ignore_thresholds is False:
+                    if self.tardy_alarm_threshold < warning_time < self.lucky_guess_threshold:
+                        y_pred.append(1)
+                    else:
+                        y_pred.append(0)
                         self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
             else:
                 y_pred.append(0)
@@ -196,8 +206,9 @@ class Result:
         # whether self.shot_no = shot_no
         # get y_pred, shot_no
         # compute warning_time, true_positive, false_positive
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
-            self.get_y()
+        # if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
+        #     self.get_y()
+        self.get_y()
         shot_no = self.shot_no
         y_pred = self.y_pred
 
@@ -211,7 +222,7 @@ class Result:
                 self.result.loc[self.result.shot_no == shot_no[i], 'true_positive'] = 0
                 self.result.loc[self.result.shot_no == shot_no[i], 'false_positive'] = 1
 
-            else:
+            elif true_disruption == 0 and y_pred[i] == 0:
                 self.result.loc[self.result.shot_no == shot_no[i], 'true_positive'] = 0
                 self.result.loc[self.result.shot_no == shot_no[i], 'false_positive'] = 0
 
@@ -222,7 +233,7 @@ class Result:
 
         if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
             self.get_y()
-        [[tp, fn], [fp, tn]] = confusion_matrix(self.y_true, self.y_pred, labels=[1, 0])
+        [[tn, fp], [fn, tp]] = confusion_matrix(self.y_true, self.y_pred, labels=[1, 0])
         return tp, fn, fp, tn
 
     def ture_positive_rate(self):
@@ -331,3 +342,15 @@ class Result:
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
+if __name__ == '__main__':
+    result = Result("G:\datapractice\\test\\test.xlsx")
+
+
+    result.tardy_alarm_threshold = 0.02
+    result.lucky_guess_threshold = 0.3
+    # result.get_y()
+    result.calc_metrics()
+    # result.get_accuracy()
+    # result.get_precision()
+    tp, fn, fp, tn = result.confusion_matrix()
+    result.save()

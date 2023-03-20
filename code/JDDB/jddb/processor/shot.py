@@ -1,3 +1,5 @@
+import os
+
 from ..file_repo import FileRepo
 from .signal import Signal
 from typing import Union, List
@@ -125,7 +127,7 @@ class Shot(object):
             if isinstance(o_tag, str) and isinstance(new_signal, Signal):
                 self.update(o_tag, new_signal)
 
-            elif isinstance(o_tag, list) and isinstance(new_signal, list):
+            elif isinstance(o_tag, list) and isinstance(new_signal, tuple):
                 if len(o_tag) != len(new_signal):
                     raise ValueError("Lengths of output tags and signals do not match!")
                 for idx, each_signal in enumerate(new_signal):
@@ -144,7 +146,11 @@ class Shot(object):
             save_repo (FileRepo): file repo specified to save the shot. Default None.
         """
         if save_repo is not None and (save_repo.base_path != self.file_repo.base_path):
-            output_path = save_repo.create_shot(self.shot_no)
+            try:
+                output_path = save_repo.create_shot(self.shot_no)
+            except OSError:
+                os.remove(save_repo.get_file(self.shot_no, ignore_none=True))
+                output_path = save_repo.create_shot(self.shot_no)
             data_dict = dict()
             for tag in self.tags:
                 signal = self.get(tag)
