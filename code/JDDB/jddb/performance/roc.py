@@ -18,6 +18,12 @@ class Roc:
         self.report_csv_path = report_csv_path
 
     def roc(self, roc_file_path):
+        """
+            draw roc curve
+        Args:
+            roc_file_path: a path to save picture
+
+        """
         report = Report(self.report_csv_path)
         report.report_file()
 

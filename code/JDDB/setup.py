@@ -7,6 +7,10 @@ setup(
     packages=find_packages(),
     install_requires=[
         'numpy',
-        'pandas'
+        'pandas',
+        'h5py',
+        'pymongo',
+        'scikit-learn',
+        'matplotlib'
     ],
 )
