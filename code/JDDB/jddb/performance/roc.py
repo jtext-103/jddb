@@ -18,7 +18,8 @@ class Roc:
         self.report_csv_path = report_csv_path
 
     def roc(self, roc_file_path):
-        report = Report(self.report_csv_path).report
+        report = Report(self.report_csv_path).report_file()
+
         fpr = report.loc['FPR'].tolist()
         tpr = report.loc['TPR'].tolist()
         tpr_ordered = []

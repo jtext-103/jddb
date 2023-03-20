@@ -113,7 +113,7 @@ class Result:
 
         self.check_repeated(shot_no)
         for i in range(len(shot_no)):
-            row_index = len(self.result) + 1  # 当前excel内容有几行
+            row_index = len(self.result)  # 当前excel内容有几行
             if self.result.loc[self.result.shot_no == shot_no[i], 'predited_disruption'].tolist()[0] == 0:
                 predicted_disruption_time[i] = -1
             self.result.loc[row_index, ['shot_no', 'predited_disruption', 'predicted_disruption_time']] = \
