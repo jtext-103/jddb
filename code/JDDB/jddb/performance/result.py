@@ -159,8 +159,15 @@ class Result:
                 self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption_time'].tolist()[0]
             true_disruption_time = \
                 self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption_time'].tolist()[0]
-            self.result.loc[self.result.shot_no == shot_no[
-                i], 'warning_time'] = true_disruption_time - predicted_disruption_time
+            predicted_disruption = \
+                self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption'].tolist()[0]
+            if true_disruption_time == -1 and predicted_disruption == 1:
+                self.result.loc[self.result.shot_no == shot_no[
+                    i], 'warning_time'] = predicted_disruption_time
+            else:
+                self.result.loc[self.result.shot_no == shot_no[
+                    i], 'warning_time'] = true_disruption_time - predicted_disruption_time
+
 
     def get_y_pred(self):
         y_pred = []
@@ -170,7 +177,7 @@ class Result:
             warning_time = self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0]
             predicted_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption'].tolist()[
                 0]
-            true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
+            # true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
             if predicted_disruption == 1:
                 if self.ignore_thresholds is True:
                     y_pred.append(1)
@@ -215,7 +222,7 @@ class Result:
                 self.result.loc[self.result.shot_no == shot_no[i], 'true_positive'] = 0
                 self.result.loc[self.result.shot_no == shot_no[i], 'false_positive'] = 1
 
-            else:
+            elif true_disruption == 0 and y_pred[i] == 0:
                 self.result.loc[self.result.shot_no == shot_no[i], 'true_positive'] = 0
                 self.result.loc[self.result.shot_no == shot_no[i], 'false_positive'] = 0
 
@@ -226,7 +233,7 @@ class Result:
 
         if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
             self.get_y()
-        [[tp, fn], [fp, tn]] = confusion_matrix(self.y_true, self.y_pred, labels=[1, 0])
+        [[tn, fp], [fn, tp]] = confusion_matrix(self.y_true, self.y_pred, labels=[1, 0])
         return tp, fn, fp, tn
 
     def ture_positive_rate(self):
@@ -335,14 +342,15 @@ class Result:
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
-if __name__ == '__main__':
-    result = Result("G:\datapractice\\test\\test.xlsx")
-
-
-    result.tardy_alarm_threshold = 0.02
-    result.lucky_guess_threshold = 0.2
-    # result.get_y()
-    result.calc_metrics()
-    # result.get_accuracy()
-    # result.get_precision()
-    tp, fn, fp, tn = result.confusion_matrix()
+# if __name__ == '__main__':
+#     result = Result("G:\datapractice\\test\\test.xlsx")
+#
+#
+#     result.tardy_alarm_threshold = 0.02
+#     result.lucky_guess_threshold = 0.3
+#     # result.get_y()
+#     result.calc_metrics()
+#     # result.get_accuracy()
+#     # result.get_precision()
+#     tp, fn, fp, tn = result.confusion_matrix()
+#     result.save()

@@ -91,6 +91,14 @@ class Report:
 #     report = Report("G:\datapractice\\test\\report.xlsx")
 #     report.report_file()
 #     report.add("G:\datapractice\\test\\test.xlsx", "test1", 0.02, 0.3)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test2", 0.02, 0.3)
+#     report.add("G:\datapractice\\test\\test.xlsx", "test2", 0.02, 0.06)
+#     report.add("G:\datapractice\\test\\test.xlsx", "test3", 0.02, 0.1)
+#     report.add("G:\datapractice\\test\\test.xlsx", "test4", 0.02, 0.17)
+#     report.add("G:\datapractice\\test\\test.xlsx", "test5", 0.02, 0.15)
+#     report.add("G:\datapractice\\test\\test.xlsx", "test6", 0.05, 0.3)
+#     report.add("G:\datapractice\\test\\test.xlsx", "test7", 0.02, 0.2)
+#
+#
+#
 #     report.save()
 

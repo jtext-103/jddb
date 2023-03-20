@@ -7,8 +7,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 import matplotlib
-from .result import Result
-from .report import Report
+from result import Result
+from report import Report
 from sklearn.metrics import roc_curve, auc
 
 class Roc:
@@ -18,10 +18,11 @@ class Roc:
         self.report_csv_path = report_csv_path
 
     def roc(self, roc_file_path):
-        report = Report(self.report_csv_path).report_file()
+        report = Report(self.report_csv_path)
+        report.report_file()
 
-        fpr = report.loc['FPR'].tolist()
-        tpr = report.loc['TPR'].tolist()
+        fpr = report.report.fpr.tolist()
+        tpr = report.report.tpr.tolist()
         tpr_ordered = []
         index = np.array(fpr).argsort()
         for i in index:
@@ -42,5 +43,12 @@ class Roc:
         plt.legend(loc="lower right")
         plt.savefig(os.path.join(roc_file_path, 'Receiver_operating_characteristic.png'), dpi=300)
 
-
+# if __name__ == '__main__':
+#     # report = Report("G:\datapractice\\test\\report.xlsx")
+#     # report.report_file()
+#     # report.add("G:\datapractice\\test\\test.xlsx", "test1", 0.02, 0.3)
+#     # report.add("G:\datapractice\\test\\test.xlsx", "test2", 0.02, 0.3)
+#     # report.save()
+#     roc = Roc("G:\datapractice\\test\\report.xlsx")
+#     roc.roc("G:\datapractice\\test")
 
