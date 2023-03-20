@@ -196,10 +196,13 @@ class Result:
         # whether self.shot_no = shot_no
         # get y_pred, shot_no
         # get y_true
+        y_true = []
         shot_no = self.shot_no
+        y_true = []
         for i in range(len(shot_no)):
-            self.y_true.append(
+            y_true.append(
                 self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0])
+        self.y_true = y_true
 
     def calc_metrics(self):
         # in put threshold before call calc_metrics
@@ -341,16 +344,3 @@ class Result:
         ax.tick_params(which='minor', length=minor_tick_length)
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
-
-if __name__ == '__main__':
-    result = Result("G:\datapractice\\test\\test.xlsx")
-
-
-    result.tardy_alarm_threshold = 0.02
-    result.lucky_guess_threshold = 0.3
-    # result.get_y()
-    result.calc_metrics()
-    # result.get_accuracy()
-    # result.get_precision()
-    tp, fn, fp, tn = result.confusion_matrix()
-    result.save()
