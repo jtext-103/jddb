@@ -295,7 +295,7 @@ class FileRepo:
                     if overwrite:
                         self.remove_labels_file(file_path, [label])
                     else:
-                        warnings.warn("{} already exist in meat group!".format(label), category=UserWarning)
+                        warnings.warn("{} already exist in meta group!".format(label), category=UserWarning)
                         continue
                 meta_group.create_dataset(label, data=label_dict[label])
             file.close()
