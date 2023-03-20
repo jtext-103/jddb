@@ -43,6 +43,8 @@ class Roc:
         plt.legend(loc="lower right")
         plt.savefig(os.path.join(roc_file_path, 'Receiver_operating_characteristic.png'), dpi=300)
 
+
+
 # if __name__ == '__main__':
 #     # report = Report("G:\datapractice\\test\\report.xlsx")
 #     # report.report_file()

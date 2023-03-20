@@ -342,15 +342,15 @@ class Result:
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
-# if __name__ == '__main__':
-#     result = Result("G:\datapractice\\test\\test.xlsx")
-#
-#
-#     result.tardy_alarm_threshold = 0.02
-#     result.lucky_guess_threshold = 0.3
-#     # result.get_y()
-#     result.calc_metrics()
-#     # result.get_accuracy()
-#     # result.get_precision()
-#     tp, fn, fp, tn = result.confusion_matrix()
-#     result.save()
+if __name__ == '__main__':
+    result = Result("G:\datapractice\\test\\test.xlsx")
+
+
+    result.tardy_alarm_threshold = 0.02
+    result.lucky_guess_threshold = 0.3
+    # result.get_y()
+    result.calc_metrics()
+    # result.get_accuracy()
+    # result.get_precision()
+    tp, fn, fp, tn = result.confusion_matrix()
+    result.save()
