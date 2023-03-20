@@ -45,12 +45,12 @@ class Roc:
 
 
 
-# if __name__ == '__main__':
-#     # report = Report("G:\datapractice\\test\\report.xlsx")
-#     # report.report_file()
-#     # report.add("G:\datapractice\\test\\test.xlsx", "test1", 0.02, 0.3)
-#     # report.add("G:\datapractice\\test\\test.xlsx", "test2", 0.02, 0.3)
-#     # report.save()
-#     roc = Roc("G:\datapractice\\test\\report.xlsx")
-#     roc.roc("G:\datapractice\\test")
+if __name__ == '__main__':
+    # report = Report("G:\datapractice\\test\\report.xlsx")
+    # report.report_file()
+    # report.add("G:\datapractice\\test\\test.xlsx", "test1", 0.02, 0.3)
+    # report.add("G:\datapractice\\test\\test.xlsx", "test2", 0.02, 0.3)
+    # report.save()
+    roc = Roc("G:\datapractice\\test\\report.xlsx")
+    roc.roc("G:\datapractice\\test")
 

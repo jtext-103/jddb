@@ -61,7 +61,7 @@ class Report:
         self.report.loc[
             index, ['model_name', 'accuracy', 'precision', 'recall', 'fpr', 'tpr', 'tp', 'fn', 'fp',
                                    'tn']] = \
-            [model_name, accuracy, precision, recall, tpr, fpr, tp, fn, fp, tn]
+            [model_name, accuracy, precision, recall, fpr, tpr, tp, fn, fp, tn]
 
 
     def remove(self, model_name: List[str]):
@@ -88,16 +88,16 @@ class Report:
                 raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
 
 
-# if __name__ == '__main__':
-#     report = Report("G:\datapractice\\test\\report.xlsx")
-#     report.report_file()
-#     report.add("G:\datapractice\\test\\test.xlsx", "test1", 0.02, 0.3)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test2", 0.02, 0.06)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test3", 0.02, 0.1)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test4", 0.02, 0.17)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test5", 0.02, 0.15)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test6", 0.05, 0.3)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test7", 0.02, 0.2)
+if __name__ == '__main__':
+    report = Report("G:\datapractice\\test\\report.xlsx")
+    report.report_file()
+    report.add("G:\datapractice\\test\\test.xlsx", "test1", 0.02, 0.3)
+    report.add("G:\datapractice\\test\\test.xlsx", "test2", 0.02, 0.06)
+    report.add("G:\datapractice\\test\\test.xlsx", "test3", 0.02, 0.1)
+    report.add("G:\datapractice\\test\\test.xlsx", "test4", 0.02, 0.17)
+    report.add("G:\datapractice\\test\\test.xlsx", "test5", 0.02, 0.15)
+    report.add("G:\datapractice\\test\\test.xlsx", "test6", 0.05, 0.3)
+    report.add("G:\datapractice\\test\\test.xlsx", "test7", 0.02, 0.2)
 #
 #
 #
