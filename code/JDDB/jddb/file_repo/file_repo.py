@@ -103,7 +103,10 @@ class FileRepo:
             if tag_list is None:
                 tag_list = list(file.get('data').keys())
             for tag in tag_list:
-                data_dict[tag] = file.get('data').get(tag)[()]
+                try:
+                    data_dict[tag] = file.get('data').get(tag)[()]
+                except ValueError("{}".format(tag)):
+                    raise ValueError
             file.close()
             return data_dict
         else:
@@ -148,7 +151,11 @@ class FileRepo:
             if label_list is None:
                 label_list = list(file.get('meta').keys())
             for label in label_list:
-                label_dict[label] = file.get('meta').get(label)[()]
+                meta_set = file.get('meta')
+                try:
+                    label_dict[label] = file.get('meta').get(label)[()]
+                except:
+                    label_dict[label] = file.get('meta').get(label)[:]
             file.close()
             return label_dict
         else:
@@ -222,7 +229,7 @@ class FileRepo:
 
     def create_shot(self, shot_no: int) -> str:
         file_path = self.get_file(shot_no, ignore_none=True)
-        parent_dir = os.path.abspath(os.path.join(file_path,os.pardir))
+        parent_dir = os.path.abspath(os.path.join(file_path, os.pardir))
         if not os.path.exists(parent_dir):
             os.makedirs(parent_dir)
         try:
@@ -253,8 +260,11 @@ class FileRepo:
         else:
             raise OSError("Invalid path given.")
 
-    def write_data(self, shot_no: int, data_dict: dict, overwrite=False):
-        file_path = self.get_file(shot_no)
+    def write_data(self, shot_no: int, data_dict: dict, overwrite=False, create_empty=False):
+        if create_empty:
+            file_path = self.create_shot(shot_no)
+        else:
+            file_path = self.get_file(shot_no)
         self.write_data_file(file_path, data_dict, overwrite)
 
     def write_attributes(self, shot_no: int, tag: str, attribute_dict: dict, overwrite=False):
@@ -311,5 +321,5 @@ class FileRepo:
             shot_list = self.get_all_shots()
         for shot in shot_list:
             label_dict = meta_db.get_labels(shot)
-            del label_dict['shot']
+            del label_dict[shot]
             self.write_label(shot, label_dict, overwrite)
