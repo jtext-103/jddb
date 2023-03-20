@@ -197,9 +197,11 @@ class Result:
         # get y_pred, shot_no
         # get y_true
         shot_no = self.shot_no
+        y_true = []
         for i in range(len(shot_no)):
-            self.y_true.append(
+            y_true.append(
                 self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0])
+        self.y_true = y_true
 
     def calc_metrics(self):
         # in put threshold before call calc_metrics
