@@ -1,13 +1,8 @@
 from typing import List
-
-import xlwt
 import pandas as pd
-import os, sys
+import os
 from result import Result
-from sklearn.metrics import confusion_matrix
 
-
-# 调用函数result 返回值修改！！！！！！
 class Report:
 
     def __init__(self, report_csv_path: str):
@@ -86,20 +81,3 @@ class Report:
                 err_list.append(model_name[i])
             if len(err_list) > 0:
                 raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
-
-
-# if __name__ == '__main__':
-#     report = Report("G:\datapractice\\test\\report.xlsx")
-#     report.report_file()
-#     report.add("G:\datapractice\\test\\test.xlsx", "test1", 0.02, 0.3)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test2", 0.02, 0.06)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test3", 0.02, 0.1)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test4", 0.02, 0.17)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test5", 0.02, 0.15)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test6", 0.05, 0.3)
-#     report.add("G:\datapractice\\test\\test.xlsx", "test7", 0.02, 0.2)
-#
-#
-#
-#     report.save()
-
