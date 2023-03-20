@@ -1,9 +1,7 @@
 import warnings
 import numpy as np
-from typing import List
 from MDSplus import connection
 from typing import List
-
 from .file_repo import FileRepo
 import time as delay_time
 
@@ -23,6 +21,18 @@ class MDSDumper:
             self.conn.disconnect()
 
     def dumper(self, file_repo: FileRepo, shot_list: List[int], tag_list: List[str], overwrite=False):
+        """
+
+        Dump data from MDSPlus into the hdf5 shot file
+        Args:
+            file_repo: initialized object of FileRepo
+            shot_list: shot list
+            tag_list: tag list
+            overwrite: True -> remove the existed tag, then write the new one
+
+        Returns: None
+
+        """
         i = int(0)
         while True:
             if i > len(shot_list) - 1:
