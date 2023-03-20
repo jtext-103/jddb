@@ -35,7 +35,7 @@ class Result:
         # add header
         # set property
         df_result = pd.DataFrame(columns=self.__header)
-        df_result.loc[1, ['tardy_alarm_threshold', 'lucky_guess_threshold']] = [self.tardy_alarm_threshold,
+        df_result.loc[0, ['tardy_alarm_threshold', 'lucky_guess_threshold']] = [self.tardy_alarm_threshold,
                                                                                 self.lucky_guess_threshold]
         self.result = df_result
         self.save()
@@ -57,8 +57,8 @@ class Result:
         self.lucky_guess_threshold = self.result.loc[1, 'lucky_guess_threshold']
 
     def save(self):
-        self.result.loc[1, ['lucky_guess_threshold']] = self.lucky_guess_threshold
-        self.result.loc[1, ['tardy_alarm_threshold']] = self.tardy_alarm_threshold
+        self.result.loc[0, ['lucky_guess_threshold']] = self.lucky_guess_threshold
+        self.result.loc[0, ['tardy_alarm_threshold']] = self.tardy_alarm_threshold
         self.result.to_excel(self.csv_path, index=False)
 
     def get_all_shots(self, include_no_truth=True):
@@ -172,11 +172,13 @@ class Result:
                 0]
             true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
             if predicted_disruption == 1 and true_disruption == 1:
-                if self.tardy_alarm_threshold < warning_time < self.lucky_guess_threshold:
+                if self.ignore_thresholds is False:
+                    self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
+                    y_pred.append(1)
+                elif self.tardy_alarm_threshold < warning_time < self.lucky_guess_threshold:
                     y_pred.append(1)
                 else:
-                    if self.ignore_thresholds is False:
-                        self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
+                    y_pred.append(0)
             else:
                 y_pred.append(0)
                 self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
@@ -331,3 +333,14 @@ class Result:
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
+if __name__ == '__main__':
+    result = Result("G:\datapractice\\test\\test.xlsx")
+
+
+    result.tardy_alarm_threshold = 0.02
+    result.lucky_guess_threshold = 0.3
+    result.get_y()
+    result.calc_metrics()
+    result.get_accuracy()
+    result.get_precision()
+    result.confusion_matrix()

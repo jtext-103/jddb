@@ -1,7 +1,9 @@
+from typing import List
+
 import xlwt
 import pandas as pd
 import os, sys
-from .result import Result
+from result import Result
 from sklearn.metrics import confusion_matrix
 
 
@@ -17,7 +19,7 @@ class Report:
         self.__header = ['model_name', 'accuracy', 'precision', 'recall', 'fpr', 'tpr', 'tp', 'fn', 'fp', 'tn']
         self.report = None
 
-    def report(self):
+    def report_file(self):
         if os.path.exists(self.report_csv_path):
             self.read()
         else:
@@ -31,23 +33,24 @@ class Report:
         self.save()
 
     def read(self):
-
         # check file format
         # read in all module
         self.report = pd.read_excel(self.report_csv_path)
         if self.report.columns is None:
             self.report = pd.DataFrame(columns=self.__header)
-        elif self.report.columns != self.__header:
+        elif len(set(self.report.columns) & set(self.__header)) != len(self.report.columns):
             raise ValueError("The file from csv_path:{} contains unknown information ".format(self.report_csv_path))
 
     def save(self):
         self.report.to_excel(self.report_csv_path, index=False)
 
-    def add(self, result_csv_path: str, model_name: List[str]):
-        self.report = self.report()
+    def add(self, result_csv_path: str, model_name: List[str], tardy_alarm_threshold, lucky_guess_threshold):
+        self.report_file()
         result = Result(result_csv_path)
         self.check_repeat(model_name)
-
+        result.tardy_alarm_threshold = tardy_alarm_threshold
+        result.lucky_guess_threshold = lucky_guess_threshold
+        result.get_y()
         tpr, fpr = result.ture_positive_rate()
         accuracy = result.get_accuracy()
         precision = result.get_precision()
@@ -82,3 +85,8 @@ class Report:
                 err_list.append(model_name[i])
             if len(err_list) > 0:
                 raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
+
+if __name__ == '__main__':
+    report = Report("G:\datapractice\\test\\report.xlsx")
+    report.report_file()
+    report.add("G:\datapractice\\test\\test.xlsx", ["test"], 0.02, 0.3)
