@@ -6,8 +6,15 @@ from sklearn.metrics import auc
 import matplotlib
 
 class Roc:
+    """
+        draw roc curve, and save the picture
 
+    """
     def __init__(self, report_csv_path: str):
+        """
+        Args:
+            report_csv_path:  input a report csv path to load data
+        """
 
         self.report_csv_path = report_csv_path
 
@@ -30,7 +37,7 @@ class Roc:
         fpr.sort()
         roc_auc = auc(fpr, tpr)
         lw = 2
-        # matplotlib.use('QtAgg')
+        #  matplotlib.use('QtAgg')
         plt.rcParams["figure.figsize"] = (10, 10)
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
