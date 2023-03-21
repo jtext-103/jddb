@@ -83,7 +83,7 @@ class Report:
         Args:
             model_name: a list of model
         """
-        model_name = self.check_no_exist(model_name)
+        model_name = self.check_unexisted(model_name)
         for i in range(len(model_name)):
             self.report = self.report.drop(self.report[self.report.model_name == model_name[i]].index)
 
@@ -96,7 +96,7 @@ class Report:
         if model_name in self.report.model_name.tolist():
             raise ValueError("data of model_name:{} has already existed".format(model_name))
 
-    def check_no_exist(self, model_name: List[str]):
+    def check_unexisted(self, model_name: List[str]):
         """
             check whehter shot_no repeated
             if repeated, raise error
