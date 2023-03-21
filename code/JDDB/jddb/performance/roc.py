@@ -30,7 +30,7 @@ class Roc:
         fpr.sort()
         roc_auc = auc(fpr, tpr)
         lw = 2
-        matplotlib.use('QtAgg')
+        # matplotlib.use('QtAgg')
         plt.rcParams["figure.figsize"] = (10, 10)
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
@@ -45,12 +45,12 @@ class Roc:
         plt.show(block=True)
 
 
-# if __name__ == '__main__':
-#     report = Report("G:\datapractice\\test\\report.xlsx")
-#     report.report_file()
+if __name__ == '__main__':
+    report = Report("G:\datapractice\\test\\report.xlsx")
+    report.report_file()
 # #     # report.add("G:\datapractice\\test\\test.xlsx", "test1", 0.02, 0.3)
 # #     # report.add("G:\datapractice\\test\\test.xlsx", "test2", 0.02, 0.3)
 # #     # report.save()
-#     roc = Roc("G:\datapractice\\test\\report.xlsx")
-#     roc.roc("G:\datapractice\\test")
+    roc = Roc("G:\datapractice\\test\\report.xlsx")
+    roc.roc("G:\datapractice\\test")
 
