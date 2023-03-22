@@ -129,7 +129,7 @@ class Result:
         if len(err_list) > 0:
             raise ValueError("data of shot_no:{} has already existed".format(err_list))
 
-    def add(self, shot_no: List[int], predicted_disruption: List[bool], predicted_disruption_time: List[float]):
+    def add(self, shot_no: List[int], predicted_disruption: List[bool], predicted_disruption_time: List[float], ):
         """
             check lenth
             check repeated shoot,call check_repeated()
@@ -202,6 +202,7 @@ class Result:
                     self.tardy_alarm_threshold, self.lucky_guess_threshold))
         self.shot_no = self.get_all_shots(include_no_truth=False)
         self.get_warning_time()
+
         self.get_y_pred()
         self.get_y_true()
 
@@ -321,7 +322,7 @@ class Result:
 
         if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
             self.get_y()
-        [[tn, fp], [fn, tp]] = confusion_matrix(self.y_true, self.y_pred, labels=[1, 0])
+        [[tn, fp], [fn, tp]] = confusion_matrix(self.y_true, self.y_pred)
         return tp, fn, fp, tn
 
     def ture_positive_rate(self):
@@ -392,7 +393,6 @@ class Result:
         """
 
         matplotlib.use('TkAgg')
-        plt.style.use("ggplot")
         plt.rcParams['font.family'] = 'Arial'
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
@@ -434,7 +434,7 @@ class Result:
 
         """
         true_dis_num = len(self.get_all_shots(include_no_truth=False))
-        matplotlib.use('TkAgg')
+        result.warning_time_histogram("G:\datapractice\\test", [-1, 0, 0.06,0.3])
         plt.rcParams['font.family'] = 'Arial'
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
@@ -475,8 +475,8 @@ class Result:
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
-# if __name__ == '__main__':
-#     result = Result("G:\datapractice\\test\\test.xlsx")
+if __name__ == '__main__':
+    result = Result("G:\datapractice\\test\\test.xlsx")
 #     shot_list = [100561, 100562, 100563]
 #     true_disruption = [1, 0, 1]
 #     true_disruption_time = [0.13, 0.56, 0.41]
