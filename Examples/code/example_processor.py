@@ -143,7 +143,7 @@ class Mean(BaseProcessor):
         return new_signal
 
 
-class NormalParameter(BaseProcessor):
+class Concatenate(BaseProcessor):
     """
         calculate the mean and standard deviation of the given signal
     """
