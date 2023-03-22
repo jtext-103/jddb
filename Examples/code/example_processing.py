@@ -78,6 +78,7 @@ def normalization(n_mode_dataset, to_concat_list, concated_list, normal_list):
                                                     processing_shotsets_path))
 
 def find_tags(string):
+
     """
         Given the string lookup, the output contain tags with the same content
     :param string: "string"
