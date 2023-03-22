@@ -36,7 +36,10 @@ picture_path = "G:\\datapractice\\example_lry\\example_result_data\\fre_picture"
 
 def get_parameter(tag, dataset):
     """
-    Calculate the standard deviation and mean.
+        the tag are fed into the function get_parameter, which concatenated by array of a certain kind of diagnosis
+        inside each shot.
+        concatenate the input tag shot by shot, getting the kind of diagnosis  of the whole dataset.
+        return the calculate the standard deviation and mean. called by normalization
     """
     data_concat = np.empty(shape=0, dtype=np.float32)
     for i in range(len(shotlist)):
@@ -48,30 +51,31 @@ def get_parameter(tag, dataset):
     return mean, std
 
 
-def normalization(n_mode_dataset, input_list1, output_list, input_list2):
+def normalization(n_mode_dataset, to_concat_list, concated_list, normal_list):
     """
         Normalize the signal
     :param n_mode_dataset:
-    :param input_list1: the tags needed to calculate the standard deviation
-    :param output_list: the tags to be concatenated
-    :param input_list2: the tags to be normalized
+
+    :param to_concat_list: the tags needed to concatenate before calculating the standard deviation
+    :param concated_list: output new concatenated tags in intermediate steps of normalization
+
+    :param normal_list: the tags to be normalized, call NormalizationProcessor to process
     """
-    for index in range(len(input_list1)):
-        out_put = [output_list[index]]
-        n_mode_dataset = n_mode_dataset.process(processor=NormalParameter(),
-                                                input_tags=[input_list1[index]],
+    for index in range(len(to_concat_list)):
+        out_put = [concated_list[index]]
+        n_mode_dataset = n_mode_dataset.process(processor=Concatenate(),
+                                                input_tags=[to_concat_list[index]],
                                                 output_tags=out_put,
                                                 save_repo=FileRepo(
                                                     processing_shotsets_path))
-        mean, std = get_parameter(output_list[index], n_mode_dataset)
-        if isinstance(input_list2[index], str):
-            input_list2[index] = eval(str(list(input_list2[index])).replace(',', '').replace(' ', ''))
+        mean, std = get_parameter(concated_list[index], n_mode_dataset)
+        if isinstance(normal_list[index], str):
+            normal_list[index] = eval(str(list(normal_list[index])).replace(',', '').replace(' ', ''))
         n_mode_dataset = n_mode_dataset.process(processor=NormalizationProcessor(mean, std),
-                                                input_tags=input_list2[index],
-                                                output_tags=input_list2[index],
+                                                input_tags=normal_list[index],
+                                                output_tags=normal_list[index],
                                                 save_repo=FileRepo(
                                                     processing_shotsets_path))
-
 
 def find_tags(string):
     """
@@ -159,7 +163,7 @@ if __name__ == '__main__':
     # Read the concatenate_signal of each cannon and concatenate
     exsad = find_tags("\\exsad")
 
-    input_list1 = [
+    to_concat_list = [
         ["\\Ivfp", "\\Ihfp"],
         "\\Iohp",
         "\\bt",
@@ -172,7 +176,7 @@ if __name__ == '__main__':
         sxr,
         "\\fft_amp",
         "\\fft_fre"]
-    output_list_mean = [
+    concated_list = [
         "\\Ifp_contac",
         "\\Iohp",
         "\\bt",
@@ -186,7 +190,7 @@ if __name__ == '__main__':
         "\\fft_amp",
         "\\fft_fre"
     ]
-    input_list2 = [
+    normal_list = [
         ["\\Ivfp", "\\Ihfp"],
         "\\Iohp",
         "\\bt",
@@ -200,7 +204,7 @@ if __name__ == '__main__':
         "\\fft_amp",
         "\\fft_fre"]
 
-    normalization(n_mode_dataset, input_list1, output_list_mean, input_list2)
+    normalization(n_mode_dataset, to_concat_list, concated_list, normal_list)
     # %%
 
     # %%
