@@ -3,9 +3,10 @@ import numpy as np
 
 
 class NormalizationProcessor(BaseProcessor):
-    def __init__(self, param_dict):
+    def __init__(self, std: float, mean: float):
         super().__init__()
-        self.params.update({"ParamDict": param_dict})
+        self._std = std
+        self._mean = mean
 
     def transform(self, signal: Signal) -> Signal:
         """Compute the z-score.
@@ -19,9 +20,7 @@ class NormalizationProcessor(BaseProcessor):
 
         Returns: Signal: The normalized signal.
         """
-        mean = self.params['ParamDict'][signal.tag][0]
-        std = self.params['ParamDict'][signal.tag][1]
-        normalized_data = (signal.data - mean) / std
+        normalized_data = (signal.data - self._mean) / self._std
         normalized_data = np.clip(normalized_data, -10, 10)
 
         return Signal(data=normalized_data, attributes=signal.attributes)
