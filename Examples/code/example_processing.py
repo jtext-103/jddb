@@ -1,283 +1,269 @@
-from matplotlib.pyplot import MultipleLocator
-from matplotlib.ticker import AutoMinorLocator
-
 from jddb.processor import ShotSet, Shot, Signal, BaseProcessor
 from jddb.processor.basic_processors import ResamplingProcessor, NormalizationProcessor
 from jddb.file_repo import FileRepo
 import matplotlib
 from matplotlib import pyplot as plt
 from example_processor import *
-import pandas as pd
 import numpy as np
-import math
-import warnings
-import h5py
 import os
-import json
 
 
-def read_config():
-    """"读取配置"""
-    with open("config_mode_prediction.json", 'r') as json_file:
-        config = json.load(json_file, strict=False)
-    return config
+keep_tags = [
+    "\\Ivfp",
+    "\\Ihfp",
+    "\\Iohp",
+    "\\bt",
+    "\\dx",
+    "\\dy",
+    "\\ip",
+    "\\vl",
+    "\\polaris_den_mean",
+    "\\sxr_c_mean",
+    "\\fft_amp",
+    "\\fft_fre",
+]
+
+window_length = 2500
+resampled_rate = 1000
+clip_second = 0.05
+overlap = 0.9
+
+raw_shotsets_path = "G:\\datapractice\\example_lry\\Example_shot_files"
+processed_path = "G:\\datapractice\\example_lry\\example_result_data\\processed_shotsets"
+processing_shotsets_path = "G:\\datapractice\\example_lry\\example_result_data\\processing_shotsets"
+picture_path = "G:\\datapractice\\example_lry\\example_result_data\\fre_picture"
 
 
-config = read_config()
-input_signals = config["windows"]["diagnosis"]["input_signals"]
-slice_signal = config["windows"]["diagnosis"]["slice_signal"]
-MA_m = config["windows"]["diagnosis"]["MA_m"]
-exsad_n = config["windows"]["diagnosis"]["exsad_n"]
-m_mode_number = config["windows"]["diagnosis"]["m_mode_number"]
-amp_fre_signal = config["windows"]["diagnosis"]["amp_fre_signal"]
-resampled_rate = config["windows"]["resampled_rate"]
-clip_second = config["windows"]["clip_second"]
-low_pass = config["windows"]["low_pass"]
-oder = config["windows"]["oder"]
-real_angle = config["windows"]["real_angle"]
-high_pass = config["windows"]["high_pass"]
-window_length = config["windows"]["window_length"]
-overlap_5ms = config["windows"]["overlap_5ms"]
-overlap_tenms = config["windows"]["overlap_tenms"]
-raw_shotsets_path = config["windows"]["path"]["raw_shotsets_path"]
-to_be_processed_path = config["windows"]["path"]["to_be_processed_shotsets_path"]
-resampled_shotsets_path = config["windows"]["path"]["resampled_shotsets_path"]
-fre_picture_path = config["windows"]["path"]["fre_picture_path"]
-
-# load data
-# base_path = os.path.join(raw_shotsets_path, "$shot_2$XX", "$shot_1$X")
-# file_repo = FileRepo(base_path)
-# n_mode_dataset = ShotSet(file_repo)
-resampled_shotsets_path = os.path.join(resampled_shotsets_path, "$shot_2$XX", "$shot_1$X")
-n_mode_dataset = ShotSet(FileRepo(resampled_shotsets_path))
-shotlist = n_mode_dataset.shot_list
+def get_parameter(tag, dataset):
+    """
+    Calculate the standard deviation and mean.
+    """
+    data_concat = np.empty(shape=0, dtype=np.float32)
+    for i in range(len(shotlist)):
+        shot_concat = dataset.get_shot(shotlist[i])
+        concat_signal = shot_concat.get(tag)
+        data_concat = np.concatenate((data_concat, concat_signal.data))
+    mean = np.mean(data_concat, dtype=np.float32)
+    std = np.std(data_concat, dtype=np.float32)
+    return mean, std
 
 
-# # n_mode_dataset = ShotSet(FileRepo(r'G:\datapractice\example_lry\raw_shotsets\$shot_2$XX\$shot_1$X'))
-# # n_mode_dataset = ShotSet(FileRepo(raw_shotsets_path))
-# shotlist = n_mode_dataset.shot_list
-# shot = n_mode_dataset.get_shot(shotlist[0])
-# #drop siganl not
-# n_mode_dataset = n_mode_dataset.remove(tags=MA_m, keep=True,
-#                                             save_repo=FileRepo(r'G:\datapractice\example_lry\Example_shot_files\$shot_2$XX\$shot_1$X'))
-# clip
-# n_mode_dataset = ShotSet(FileRepo(r'G:\datapractice\example_lry\Example_shot_files\$shot_2$XX\$shot_1$X'))
-# n_mode_dataset = n_mode_dataset.process(processor=TimeClipProcessor(start_time=0),
-#                                         input_tags=exsad_n + MA_m,
-#                                         output_tags=exsad_n + MA_m,
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path))
-# # bandpass MA exsad
-# n_mode_dataset = n_mode_dataset.process(processor=BandPassFilterProcessor(low_pass=low_pass, high_pass=high_pass,
-#                                                                           oder=oder),
-#                                         input_tags=exsad_n + MA_m,
-#                                         output_tags=exsad_n + MA_m,
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path))  # save_repo=FileRepo(resampled_shotsets_path))
-# # resample exsad MA
-# n_mode_dataset = n_mode_dataset.process(processor=ResamplingProcessor(resampled_rate),
-#                                         input_tags=exsad_n + MA_m,
-#                                         output_tags=exsad_n + MA_m,
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path))
-# slice MA
-# n_mode_dataset = n_mode_dataset.process(processor=SliceProcessor(window_length=window_length, overlap=0),
-#                                         input_tags=[MA_m[0]],
-#                                         output_tags=[slice_signal[0]],
-#                                         save_repo=FileRepo(
-#                                                 resampled_shotsets_path))
-# # fft MA
-# n_mode_dataset = n_mode_dataset.process(processor=FFTProcessor(),
-#                                         input_tags=[slice_signal[0]],
-#                                         output_tags=[slice_signal[0]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path))
-# # fre_amp MA
-# n_mode_dataset = n_mode_dataset.process(processor=AmpMaxProcessor(resampled_rate),
-#                                         input_tags=[slice_signal[0]],
-#                                         output_tags=[amp_fre_signal[0]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path))
-# n_mode_dataset = ShotSet(FileRepo(resampled_shotsets_path))
-# shotlist = n_mode_dataset.shot_list
-# signal_to_fft_shotsets_path = os.path.join(signal_to_fft_shotsets_path, "$shot_2$XX", "$shot_1$X")
-# n_mode_dataset = n_mode_dataset.process(processor=N1mode(),
-#                                         input_tags=[exsad_n],
-#                                         output_tags=[amp_fre_signal[4]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path))
-# def spectrogram_tm(shot_no, dataset, picture_path):
-#     # p1 spectroram p2 ip
-#     # p3 MA         p4 exsad
-#     # p5 MA_amp_fre p6 exsad_n=1
-#     matplotlib.use('Agg')  # 以下绘制的图形不会在窗口显示
-#     shot_plt = dataset.get_shot(shot_no)
-#     signal_ip = shot_plt.get("\\ip")  # p2
-#     signal_MA_POL2_P01 = shot_plt.get(MA_m[0])  # p3
-#     signal_exsad_n = shot_plt.get(exsad_n[0])  # p4 exsad1
-#     signal_MA_amp_fre = shot_plt.get(amp_fre_signal[0])  # p5
-#     signal_exsad_amp_phi = shot_plt.get(amp_fre_signal[4])  # p6
-#     end_time = max([shot_plt.labels["DownTime"], signal_MA_POL2_P01.time[-1], signal_exsad_n.time[-1]])  #
-#     # end_time = signal_MA_POL2_P01.time[-1]
-#     # 绘制图形并存入指定路径
-#     # 图片保存路径
-#     dir_name = os.path.join(picture_path, str(shot_no) + '.jpg')
-#     fig = plt.figure(1, figsize=(23, 13))
-#     for j in range(6):
-#         plt.subplots_adjust(wspace=0.4, hspace=0.2)
-#         if j == 0:
-#             # "\MA_POL_CA01T"
-#             ax = plt.subplot(3, 2, j + 1)  # p1
-#             plt.ylabel("MA_POL2_P01")
-#             # plt.xticks(np.arange(0.1, end_time, 0.05))
-#             # ax.xaxis.set_major_locator(MultipleLocator(1.0))
-#             # ax.xaxis.set_minor_locator(AutoMinorLocator(4))
-#             # plt.xlim([0, end_time])
-#
-#             # plt.specgram(np.concatenate((np.zeros(int(clip_second*signal_MA_POL2_P01.attributes['SampleRate'])),
-#             #                              signal_MA_POL2_P01.data),axis=0),
-#             #                                 Fs=signal_MA_POL2_P01.attributes['SampleRate'], cmap='hsv')
-#             # signal_MA_POL2_P01.data[signal_MA_POL2_P01.attributes['SampleRate']*signal_MA_POL2_P01.attributes['StartTime']:-1]
-#             plt.specgram(signal_MA_POL2_P01.data,
-#                          Fs=signal_MA_POL2_P01.attributes['SampleRate'],
-#                          cmap='plasma')  #
-#             # pxx, freq, t, cax =
-#             plt.colorbar(cax=fig.add_axes([0.05, 0.4, 0.01, 0.5]))
-#         if j == 2:
-#             plt.subplot(3, 2, j + 1)  # 图3
-#             # "MA"
-#             plt.xlim([0, end_time])
-#             plt.ylabel("MA_POL2_P01")
-#             plt.plot(signal_MA_POL2_P01.time, signal_MA_POL2_P01.data)
-#         if j == 4:
-#             plt.subplot(3, 2, j + 1)
-#             plt.xlim([0, end_time])
-#             plt.xlabel("time")
-#             ax1 = plt.subplot(3, 2, j + 1)  # 图5
-#             ax2 = ax1.twinx()  # 做镜像处理
-#             ax1.plot(signal_MA_amp_fre.time, signal_MA_amp_fre.data[:, j - 4], 'b-')  # amp
-#             ax2.plot(signal_MA_amp_fre.time, signal_MA_amp_fre.data[:, j - 3], 'r-')  # fre
-#             ##ax1.set_xlabel('X data')  # 设置x轴标题
-#             ax1.set_ylabel("Y_5ms_Max_Amp", color='b')  # 设置Y1轴标题
-#             ax2.set_ylabel("Y_5ms_fre", color='r')  # 设置Y2轴标题
-#         if j == 1:
-#             # "ip"
-#             plt.subplot(3, 2, j + 1)  # 图2
-#             plt.xlim([0, signal_ip.time[-1] - 1])
-#             plt.ylabel("ip")
-#             plt.plot(signal_ip.time, signal_ip.data)
-#         if j == 3:
-#             plt.subplot(3, 2, j + 1)  # 图4
-#             # "exsad1"
-#             plt.xlim([0, end_time])
-#             plt.ylabel("exsad1")
-#             plt.plot(signal_exsad_n.time, signal_exsad_n.data)
-#         if j == 5:
-#             plt.subplot(3, 2, j + 1)  # 图6
-#             # "exsad_amp_phi"
-#             plt.xlabel("time")
-#             plt.xlim([0, end_time])
-#             ax1 = plt.subplot(3, 2, j + 1)
-#             # ax2 = ax1.twinx()  # 做镜像处理
-#             ax1.plot(signal_exsad_amp_phi.time, signal_exsad_amp_phi.data[:, j - 5], 'b-')
-#             # ax2.plot(signal_exsad_amp_phi.time, signal_exsad_amp_phi.raw[:, j-4], 'r-')
-#             ##ax1.set_xlabel('X data')  # 设置x轴标题
-#             ax1.set_ylabel("exsad1_Amp", color='b')  # 设置Y1轴标题
-#             # ax2.set_ylabel("exsad1_phi", color='r')  # 设置Y2轴标题
-#         ax = plt.gca()
-#         if j != 1:
-#             ax.xaxis.set_major_locator(MultipleLocator(0.05))
-#         else:
-#             ax.xaxis.set_major_locator(MultipleLocator(0.1))
-#         plt.grid(axis="x", linestyle='-.', which='major')
-#     plt.suptitle(str(shot_no) + "_5ms", x=0.5, y=0.98)
-#     plt.savefig(dir_name)
-#     plt.close()
-#
-#
-# for i in range(len(shotlist)):
-#     spectrogram_tm(shotlist[i], n_mode_dataset, fre_picture_path)
+def normalization(n_mode_dataset, input_list1, output_list, input_list2):
+    """
+        Normalize the signal
+    :param n_mode_dataset:
+    :param input_list1: the tags needed to calculate the standard deviation
+    :param output_list: the tags to be concatenated
+    :param input_list2: the tags to be normalized
+    """
+    for index in range(len(input_list1)):
+        out_put = [output_list[index]]
+        n_mode_dataset = n_mode_dataset.process(processor=NormalParameter(),
+                                                input_tags=[input_list1[index]],
+                                                output_tags=out_put,
+                                                save_repo=FileRepo(
+                                                    processing_shotsets_path))
+        mean, std = get_parameter(output_list[index], n_mode_dataset)
+        if isinstance(input_list2[index], str):
+            input_list2[index] = eval(str(list(input_list2[index])).replace(',', '').replace(' ', ''))
+        n_mode_dataset = n_mode_dataset.process(processor=NormalizationProcessor(mean, std),
+                                                input_tags=input_list2[index],
+                                                output_tags=input_list2[index],
+                                                save_repo=FileRepo(
+                                                    processing_shotsets_path))
 
-"""
--------
-3.18
-1.根据图像选M_mode阈值
-2.找出m=1 ,m=2, ...的标签
-  lock_mode 时 fre=0，amp=Nan
-3.写个down_time+t 的，disraptive——signal标签(sample-rate*****)
-4.修改roc，修改report函数
 
--------
-"""
-# n_mode_dataset = n_mode_dataset.process(processor=M_mode(),
-#                                         input_tags=[[MA_m[0], MA_m[1]]],
-#                                         output_tags=[[amp_fre_signal[1], amp_fre_signal[2], amp_fre_signal[3]]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path))
-# ## m to int
-# n_mode_dataset = n_mode_dataset.process(processor=Mode_to_int(),
-#                                         input_tags=[amp_fre_signal[1]],
-#                                         output_tags=[m_mode_number[3]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path))
-#
-# n_mode_dataset = n_mode_dataset.process(processor=Mode_to_int(),
-#                                         input_tags=[amp_fre_signal[2]],
-#                                         output_tags=[m_mode_number[4]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path)
-#                                         )
-#
-# n_mode_dataset = n_mode_dataset.process(processor=Mode_to_int(),
-#                                         input_tags=[amp_fre_signal[3]],
-#                                         output_tags=[m_mode_number[5]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path)
-#                                         )
-##lockmode
-#
-# n_mode_dataset = n_mode_dataset.process(processor=LockModeJudege(),
-#                                         input_tags=[[m_mode_number[3], m_mode_number[4], m_mode_number[5], amp_fre_signal[0]]],
-#                                         output_tags=[m_mode_number[6]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path)
-#                                         )
-# # m classification
-# n_mode_dataset = n_mode_dataset.process(processor=ModeClassification(m_munber=1),
-#                                         input_tags=[[m_mode_number[3], m_mode_number[4], m_mode_number[5], m_mode_number[6]]],
-#                                         output_tags=[[m_mode_number[0], amp_fre_signal[5], amp_fre_signal[8]]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path)
-#                                         )
-# n_mode_dataset = n_mode_dataset.process(processor=ModeClassification(m_munber=2),
-#                                         input_tags=[[m_mode_number[3], m_mode_number[4], m_mode_number[5], m_mode_number[6]]],
-#                                         output_tags=[[m_mode_number[1], amp_fre_signal[6], amp_fre_signal[9]]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path)
-#                                         )
-# n_mode_dataset = n_mode_dataset.process(processor=ModeClassification(m_munber=3),
-#                                         input_tags=[[m_mode_number[3], m_mode_number[4], m_mode_number[5], m_mode_number[6]]],
-#                                         output_tags=[[m_mode_number[2], amp_fre_signal[7], amp_fre_signal[10]]],
-#                                         save_repo=FileRepo(
-#                                             resampled_shotsets_path)
-#                                         )
+def find_tags(string):
+    """
+        Given the string lookup, the output contain tags with the same content
+    :param string: "string"
+    :return: tags with the same content
+    """
+    return list(filter(lambda tag: tag.encode("utf-8").decode("utf-8", "ignore")[0:len(string)] == string, all_tags))
 
-# lock_mode 1052637(), 1055258, 1056287, 1057329, 1057336, 1057573, 1057832
-###新增一个tag alarm_time?????????????
-def disruptalarm(shot_no, lead_time, sample_rate = 200, dataset):
-      shot_alarm = dataset.get_shot(shot_no)
-      alarm_time = shot_alarm.labels["DownTime"] +lead_time
-      undisrupt_number = int(sample_rate * alarm_time)
-      signal_new = shot_alarm.get(m_mode_number[6])
 
-      new_data = np.array([bool(0) for i in range(undisrupt_number)])
-      new_data = np.append(new_data, np.array([bool(1) for i in range(len(signal_new.time)-undisrupt_number)]), axis=0)
-      signal_new.data = new_data
-      shot_alarm.add('\\signal_alram', signal_new)
-      shot_alarm.save(FileRepo(resampled_shotsets_path))
+if __name__ == '__main__':
+    #%%load data
+    base_path = os.path.join(raw_shotsets_path, "$shot_2$XX", "$shot_1$X")
+    file_repo = FileRepo(base_path)
+    n_mode_dataset = ShotSet(file_repo)
+    processing_shotsets_path = os.path.join(processing_shotsets_path, "$shot_2$00", "$shot_1$0")
+    processed_path = os.path.join(processed_path, "$shot_2$00", "$shot_1$0")
+    # n_mode_dataset = ShotSet(FileRepo(processing_shotsets_path))
+    shotlist = n_mode_dataset.shot_list
+    all_tags = list(n_mode_dataset.get_shot(shotlist[0]).tags)
 
-# drop to_be_processed_path
+    #%%
+    # # 1.clip
+    n_mode_dataset = n_mode_dataset.process(processor=TimeClipProcessor(start_time=0),
+                                            input_tags=all_tags,
+                                            output_tags=all_tags,
+                                            save_repo=FileRepo(
+                                                processing_shotsets_path))
+    # %%
 
+    # %%
+    # # 2.slice MA
+    n_mode_dataset = n_mode_dataset.process(processor=SliceProcessor(window_length=window_length, overlap=overlap),
+                                            input_tags=["\\MA_POL2_P01"],
+                                            output_tags=["\\fft_amp"],
+                                            save_repo=FileRepo(
+                                                    processing_shotsets_path))
+    # %%
+
+    # %%
+    # # 3. fft MA
+    n_mode_dataset = n_mode_dataset.process(processor=FFTProcessor(),
+                                            input_tags=[["\\fft_amp", "\\MA_POL2_P01"]],
+                                            output_tags=[["\\fft_amp", "\\fft_fre"]],
+                                            save_repo=FileRepo(
+                                                processing_shotsets_path))
+    # %%
+    #
+    # %%
+    # # 4.mean
+    # # calc mean of "'\\polaris_den_v...'"
+    #
+    den = find_tags("\\polar")
+    n_mode_dataset = n_mode_dataset.process(processor=Mean(),
+                                            input_tags=[den],
+                                            output_tags=["\\polaris_den_mean"],
+                                            save_repo=FileRepo(
+                                                processing_shotsets_path))
+    #
+    # %%
+
+    # %%
+    # # calc mean of "'\\sxr_cc...'"
+    sxr = find_tags("\\sxr_c")
+    n_mode_dataset = n_mode_dataset.process(processor=Mean(),
+                                            input_tags=[sxr],
+                                            output_tags=["\\sxr_c_mean"],
+                                            save_repo=FileRepo(
+                                                processing_shotsets_path))
+    # %%
+
+    # %%
+    # # 5. resample all_tags
+    all_tags = list(n_mode_dataset.get_shot(shotlist[0]).tags)
+    n_mode_dataset = n_mode_dataset.process(processor=ResamplingProcessor(resampled_rate),
+                                            input_tags=all_tags,
+                                            output_tags=all_tags,
+                                            save_repo=FileRepo(
+                                                processing_shotsets_path))
+    # %%
+
+    # %%
+    # #6. normalization all(Ivfp,Ihfp)
+    # Each shot generates a concatenate_signal
+    # Read the concatenate_signal of each cannon and concatenate
+    exsad = find_tags("\\exsad")
+
+    input_list1 = [
+        ["\\Ivfp", "\\Ihfp"],
+        "\\Iohp",
+        "\\bt",
+        "\\dx",
+        "\\dy",
+        exsad,
+        "\\ip",
+        "\\vl",
+        den,
+        sxr,
+        "\\fft_amp",
+        "\\fft_fre"]
+    output_list_mean = [
+        "\\Ifp_contac",
+        "\\Iohp",
+        "\\bt",
+        "\\dx",
+        "\\dy",
+        "\\exs_contac",
+        "\\ip",
+        "\\vl",
+        "\\den_contac",
+        "\\sxr_contac",
+        "\\fft_amp",
+        "\\fft_fre"
+    ]
+    input_list2 = [
+        ["\\Ivfp", "\\Ihfp"],
+        "\\Iohp",
+        "\\bt",
+        "\\dx",
+        "\\dy",
+        exsad,
+        "\\ip",
+        "\\vl",
+        "\\polaris_den_mean",
+        "\\sxr_c_mean",
+        "\\fft_amp",
+        "\\fft_fre"]
+
+    normalization(n_mode_dataset, input_list1, output_list_mean, input_list2)
+    # %%
+
+    # %%
+    # # 7.drop siganl
+    exsad = find_tags("\\exsad")
+    n_mode_dataset = n_mode_dataset.remove(tags=keep_tags + exsad, keep=True,
+                                           save_repo=FileRepo(processed_path))
+    # %%
+
+    # %%
+    # # 8.clip
+    all_tags = n_mode_dataset.get_shot(shotlist[0]).tags
+    n_mode_dataset = n_mode_dataset.process(processor=TimeClipProcessor(start_time=0),
+                                            input_tags=all_tags,
+                                            output_tags=all_tags,
+                                            save_repo=FileRepo(
+                                                processed_path))
+    # %%
+
+    # %%
+    # # 9.alarm_tag
+    n_mode_dataset = n_mode_dataset.process(processor=AlarmTag(lead_time=0.01, fs=1000, start_time=0),
+                                            input_tags=["\\ip"],
+                                            output_tags=["\\alramtag"],
+                                            save_repo=FileRepo(
+                                                processed_path))
+    #%%
+
+    #%%picture
+    #
+    # p1 ip
+    # p2 fft
+    shot_plt = n_mode_dataset.get_shot(shotlist[0])
+    signal_ip = shot_plt.get("\\ip")  # p1
+    signal_MA_amp = shot_plt.get("\\fft_amp")  # p2
+    signal_MA_fre = shot_plt.get("\\fft_fre")  # p2
+    end_time = signal_MA_amp.time[-1]
+
+    # Draw a graph and save the specified path
+    # Image saving path
+    dir_name = os.path.join(picture_path, str(shotlist[0]) + '.jpg')
+    fig = plt.figure(1, figsize=(23, 13))
+
+    plt.subplots_adjust(wspace=0.4, hspace=0.2)
+    # "ip"
+    plt.subplot(2, 1, 1)  # p1
+    plt.plot(signal_ip.time, signal_ip.data)
+    plt.xlim([0, end_time])
+    plt.ylabel("ip")
+
+    #"amp_fre"
+    ax1 = plt.subplot(2, 1, 2)  # p2
+    ax2 = ax1.twinx()
+    ax1.plot(signal_MA_amp.time, signal_MA_amp.data, 'b-')  # amp
+    ax2.plot(signal_MA_amp.time, signal_MA_fre.data, 'r-')  # fre
+    plt.xlim([0, end_time])
+    plt.xlabel("time")
+    ax1.set_ylabel("Max_Amp", color='b')
+    ax2.set_ylabel("fre", color='r')
+    plt.grid(axis="x", linestyle='-.', which='major')
+    plt.suptitle(str(shotlist[0]) + "_5ms", x=0.5, y=0.98)
+    plt.savefig(dir_name)
+    plt.show()
 
 
 
