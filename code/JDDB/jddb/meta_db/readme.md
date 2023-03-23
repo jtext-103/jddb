@@ -78,7 +78,7 @@
     Query the shots that meet the set conditions within the set shot number range.  
   **Parameters:**  
     shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.  
-    filter : Dictionary. The filter condition for the query. The description format of the condition must comply with Mongodb's specifications, and specific details can be found on the official website of Mongodb. If filter=None, Return all shot number in MetaDB.
+    filter : Dictionary. The filter condition for the query. The description format of the condition must comply with Mongodb's specifications, and specific details can be found on the official website of Mongodb. If filter=None, Return all shot number in MetaDB.  
   **Return:**  
     List. Shot number that meets the filter condition.  
   ### **Example :**
@@ -97,7 +97,7 @@
   **Parameters:**  
     shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.  
     label_true : List of label names. Filter condition. The returned shots must satisfy that all labels in the label_true are True.  
-    label_false : List of label names. Filter condition. The returned shots must satisfy that all labels in the label_false are False.
+    label_false : List of label names. Filter condition. The returned shots must satisfy that all labels in the label_false are False.  
   **Return:**  
     List. Shot number that meets the filter condition.
   ### **Example :**  
@@ -117,7 +117,7 @@
     label_list : A list of labels that store information as numeric values.   
     lower_limit : List of lower limit values. ">=". If there is only an upper limit and no lower limit in the filter condition, the lower limit value in the corresponding position in the lower limit list is set to None.   
     upper_limit : List of upper limit values. "<=". If there is only an lower limit and no upper limit in the filter condition, the upper limit value in the corresponding position in the upper limit list is set to None.    
-    shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.  
+    shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.    
   **Return:**  
     List. Shot number that meets the filter condition.
   ### **Example :**  
@@ -137,7 +137,7 @@
     shot_list : List. The queried range of shot numbers.  
     label_list : List. The queried label names.  
     need_nd : Bool. The default value is False, and only the list of shots available for all diagnostics is returned; When need_nd=True, the list of shots available for all diagnostics, as well as a list of non-disruption shots and a list of disruption shots are returned.  
-    show : Bool. The default is True, which displays the number of shots available for each given diagnostic in the given shot number list, the number of shots available for all given diagnostic signals, and the number of non-disruption and disruption shots. If show=False, don't displayed.  
+    show : Bool. The default is True, which displays the number of shots available for each given diagnostic in the given shot number list, the number of shots available for all given diagnostic signals, and the number of non-disruption and disruption shots. If show=False, don't displayed.    
   **Return:**  
     When need_nd=False, only return one list, which is the list of shots available for all given diagnostic signals.  
     When need_nd=True, return three lists, which are the list of shots available for all given diagnostic signals, list of non-disruption shots, and list of disruption shots.
