@@ -19,9 +19,6 @@ class Report:
 
         self.__header = ['model_name', 'accuracy', 'precision', 'recall', 'fpr', 'tpr', 'tp', 'fn', 'fp', 'tn']
         self.report = None
-
-
-    def report_file(self):
         if os.path.exists(self.report_csv_path):
             self.read()
         else:
