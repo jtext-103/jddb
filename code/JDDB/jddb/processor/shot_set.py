@@ -3,6 +3,9 @@ from ..file_repo import FileRepo
 from .base_processor import BaseProcessor
 from .shot import Shot
 from typing import Union, List
+import multiprocessing as mp
+from itertools import repeat
+import platform
 
 
 class ShotSet(object):
@@ -83,11 +86,24 @@ class ShotSet(object):
             raise ValueError("Lengths of input tags and output tags do not match.")
         if shot_filter is None:
             shot_filter = self.shot_list
-        for each_shot in shot_filter:
-            shot = Shot(each_shot, self.file_repo)
-            shot.process(processor, input_tags, output_tags)
-            shot.save(save_repo)
+        if platform.system() == 'Linux':
+            pool = mp.get_context('spawn').Pool(mp.cpu_count() // 2 - 1)
+        else:
+            pool = mp.Pool(mp.cpu_count() // 2 - 1)
+
+        pool.starmap(
+            self._parallel_task,
+            zip(shot_filter, repeat(processor), repeat(input_tags), repeat(output_tags), repeat(save_repo))
+        )
+        pool.close()
+        pool.join()
         if save_repo is None and shot_filter == self.shot_list:
             return self
         else:
             return ShotSet(save_repo, shot_filter)
+
+    def _parallel_task(self, shot_no: int, processor: BaseProcessor, input_tags: list,
+                       output_tags: list, save_repo: FileRepo):
+        shot = Shot(shot_no, self.file_repo)
+        shot.process(processor, input_tags, output_tags)
+        shot.save(save_repo)
