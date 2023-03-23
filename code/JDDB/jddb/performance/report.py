@@ -17,6 +17,7 @@ class Report:
         self.__header = ['model_name', 'accuracy', 'precision', 'recall', 'fpr', 'tpr', 'tp', 'fn', 'fp', 'tn']
         self.report = None
 
+
     def report_file(self):
         if os.path.exists(self.report_csv_path):
             self.read()
@@ -51,7 +52,7 @@ class Report:
         """
         self.report.to_excel(self.report_csv_path, index=False)
 
-    def add(self, result, model_name: str, tardy_alarm_threshold, lucky_guess_threshold):
+    def add(self, result, model_name: str):
         """
             add new model
         Args:
@@ -62,8 +63,6 @@ class Report:
 
         """
         self.check_repeat(model_name)
-        result.tardy_alarm_threshold = tardy_alarm_threshold
-        result.lucky_guess_threshold = lucky_guess_threshold
         result.calc_metrics()
         tpr, fpr = result.ture_positive_rate()
         accuracy = result.get_accuracy()
@@ -111,12 +110,12 @@ class Report:
                 raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
 
 
-if __name__ == '__main__':
-    report = Report("G:\datapractice\\test\\report.xlsx")
-    result = Result("G:\datapractice\\test\\test.xlsx")
-    report.report_file()
-    report.add(result, "test1", 0.02, 0.06)
-    report.add(result, "test2", 0.03, 0.2)
-    report.add(result, "test3", 0.02, 0.3)
-    report.add(result, "test4", 0.02, 0.15)
-    report.save()
+# if __name__ == '__main__':
+#     report = Report("G:\datapractice\\test\\report.xlsx")
+#     result = Result("G:\datapractice\\test\\test.xlsx")
+#     report.report_file()
+#     report.add(result, "test1" )
+#     report.add(result, "test2")
+#     report.add(result, "test3")
+#     report.add(result, "test4")
+#     report.save()
