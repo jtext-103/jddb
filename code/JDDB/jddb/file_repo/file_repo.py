@@ -14,6 +14,28 @@ class FileRepo:
     def base_path(self):
         return self._base_path
 
+    def get_file(self, shot_no: int, ignore_none: bool = False) -> str:
+        """
+
+        Get file path for one shot
+        If not exist return empty string
+
+        Args:
+            shot_no: shot_no
+            ignore_none: True -> even the shot file does exist, still return the file path
+
+        Returns: file path
+
+        """
+        file_path = replace_pattern(self.base_path, shot_no)
+        if os.path.exists(file_path):
+            return file_path
+        else:
+            if ignore_none:
+                return file_path
+            else:
+                return ""
+
     def get_all_shots(self) -> List[int]:
         """
 
@@ -51,36 +73,39 @@ class FileRepo:
                     all_shot_list.append(shot_no)
         return all_shot_list
 
-    def get_file(self, shot_no: int, ignore_none: bool = False) -> str:
+    def create_shot(self, shot_no: int) -> str:
         """
 
-        Get file path for one shot
+        Create the a shot file
+
         Args:
             shot_no: shot_no
-            ignore_none: True -> even the shot file does exist, still return the file path
 
         Returns: file path
 
         """
-        file_path = replace_pattern(self.base_path, shot_no)
-        if os.path.exists(file_path):
-            return file_path
-        else:
-            if ignore_none:
-                return file_path
-            else:
-                return ""
+        file_path = self.get_file(shot_no, ignore_none=True)
+        parent_dir = os.path.abspath(os.path.join(file_path, os.pardir))
+        if not os.path.exists(parent_dir):
+            os.makedirs(parent_dir)
+        try:
+            file = h5py.File(file_path, 'x')
+            file.close()
+        except OSError:
+            raise OSError("Shot {} already exists.".format(shot_no))
+        return file_path
 
     def get_files(self, shot_list: List[int] = None, create_empty=False) -> dict:
         """
 
         Get files path for a shot list
+
         Args:
             shot_list: shot_list
             create_empty: True -> create shot file if it does not exist before
 
         Returns: file_path_dict
-                 --> dict["shot": file_path]
+                 --> dict{"shot_no": file_path}
 
         """
         file_path_dict = dict()
@@ -104,11 +129,12 @@ class FileRepo:
     def get_tag_list(self, shot_no: int) -> List[str]:
         """
 
-        Get tag list in one shot file
+        Get all the tag list of the data group in one shot file.
+
         Args:
             shot_no: shot_no
 
-        Returns: tag list in the data group of the shot file
+        Returns: tag list
 
         """
         file = self._open_file(self.get_file(shot_no))
@@ -128,14 +154,15 @@ class FileRepo:
     def read_data_file(self, file_path: str, tag_list: List[str] = None) -> dict:
         """
 
-        Read data dict from one shot file with file path as input
+        Read data dict from the data group in one shot file with a file path as input.
+
         Args:
             file_path: the file path for one shot
             tag_list: the tag list need to be read
                       if tag_list = None, read all tags
 
         Returns: data_dict
-                 --> data_dict["tag": data]
+                 --> data_dict{"tag": data}
 
         """
         data_dict = dict()
@@ -162,14 +189,15 @@ class FileRepo:
     def read_data(self, shot_no: int, tag_list: List[str] = None) -> dict:
         """
 
-        Read data dict from one shot file with shot number as input
+        Read data dict from the data group in one shot file with a shot number as input.
+
         Args:
             shot_no: shot_no
             tag_list: the tag list need to be read
                       if tag_list = None, read all tags
 
         Returns: data_dict
-                 --> data_dict["tag": data]
+                 --> data_dict{"tag": data}
 
         """
         file_path = self.get_file(shot_no)
@@ -179,7 +207,8 @@ class FileRepo:
     def read_attributes(self, shot_no: int, tag: str, attribute_list: List[str] = None) -> dict:
         """
 
-        Read attribute dict of one tag in one shot
+        Read attribute dict of one tag in one shot file.
+
         Args:
             shot_no: shot_no
             tag: tag
@@ -187,7 +216,7 @@ class FileRepo:
                             if attribute_list = None, read all attributes
 
         Returns: attribute_dict
-                 --> attribute_dict["attribute": data]
+                 --> attribute_dict{"attribute": data}
 
         """
         attribute_dict = dict()
@@ -213,14 +242,15 @@ class FileRepo:
     def read_labels_file(self, file_path, label_list: List[str] = None) -> dict:
         """
 
-        Read label dict from one shot file with file path as input
+        Read label dict from the meta group in one shot file with a file path as input.
+
         Args:
             file_path: the file path for one shot
             label_list: the label list need to be read
                         if label_list = None, read all labels
 
         Returns: label_dict
-                 --> label_dict["label": data]
+                 --> label_dict{"label": data}
 
         """
         label_dict = dict()
@@ -248,14 +278,15 @@ class FileRepo:
     def read_labels(self, shot_no: int, label_list: List[str] = None) -> dict:
         """
 
-        Read label dict from one shot file with shot number as input
+        Read label dict from the meta group in one shot file with a shot number as input.
+
         Args:
             shot_no: shot_no
             label_list: the label list need to be read
                         if label_list = None, read all labels
 
         Returns: label_dict
-                 --> label_dict["label": data]
+                 --> label_dict{"label": data}
 
         """
         file_path = self.get_file(shot_no)
@@ -265,7 +296,8 @@ class FileRepo:
     def remove_data_file(self, file_path: str, tag_list: List[str]):
         """
 
-        Remove the datasets of the tag list from one shot file with file path as input
+        Remove the datasets from the data group in one shot file with fa ile path as input.
+
         Args:
             file_path: the file path for one shot
             tag_list: the tag list need to be removed
@@ -291,7 +323,8 @@ class FileRepo:
     def remove_data(self, shot_no: int, tag_list: List[str]):
         """
 
-        Remove the datasets of the tag list from one shot file with shot number as input
+        Remove the datasets from the data group in one shot file with a shot number as input.
+
         Args:
             shot_no: shot_no
             tag_list: the tag list need to be removed
@@ -305,7 +338,8 @@ class FileRepo:
     def remove_attributes(self, shot_no: int, tag: str, attribute_list: List[str]):
         """
 
-        Remove the attribute of one tag in one shot
+        Remove the attribute of of one tag in one shot file.
+
         Args:
             shot_no: shot_no
             tag: tag
@@ -337,7 +371,8 @@ class FileRepo:
     def remove_labels_file(self, file_path: str, label_list: List[str]):
         """
 
-        Remove labels from one shot file with file path as input
+        Remove labels from the meta group in one shot file with a file path as input.
+
         Args:
             file_path: the file path for one shot
             label_list: the label list need to be removed
@@ -363,7 +398,8 @@ class FileRepo:
     def remove_labels(self, shot_no: int, label_list: List[str]):
         """
 
-        Remove labels from one shot file with shot number as input
+        Remove labels from the meta group in one shot file with a shot number as input.
+
         Args:
             shot_no: shot_no
             label_list: the label list need to be removed
@@ -374,35 +410,15 @@ class FileRepo:
         file_path = self.get_file(shot_no)
         self.remove_labels_file(file_path, label_list)
 
-    def create_shot(self, shot_no: int) -> str:
-        """
-
-        Create the one shot file
-        Args:
-            shot_no: shot_no
-
-        Returns: file path
-
-        """
-        file_path = self.get_file(shot_no, ignore_none=True)
-        parent_dir = os.path.abspath(os.path.join(file_path, os.pardir))
-        if not os.path.exists(parent_dir):
-            os.makedirs(parent_dir)
-        try:
-            file = h5py.File(file_path, 'x')
-            file.close()
-        except OSError:
-            raise OSError("Shot {} already exists.".format(shot_no))
-        return file_path
-
     def write_data_file(self, file_path: str, data_dict: dict, overwrite=False):
         """
 
-        Write data in one shot file with file path as input
+        Write a data dictionary in the data group in one shot file with a file path as input.
+
         Args:
             file_path: file path for one shot
             data_dict: data_dict
-                       --> data_dict["tag": data]
+                       --> data_dict{"tag": data}
             overwrite: True -> remove the existed tag, then write the new one
 
         Returns: None
@@ -431,11 +447,12 @@ class FileRepo:
     def write_data(self, shot_no: int, data_dict: dict, overwrite=False, create_empty=False):
         """
 
-        Write data in one shot file with shot number as input
+        Write a data dictionary in the data group in one shot file with a shot number as input.
+
         Args:
             shot_no: shot_no
             data_dict: data_dict
-                       --> data_dict["tag": data]
+                       --> data_dict{"tag": data}
             overwrite: True -> remove the existed tag, then write the new one
             create_empty: True -> create the shot file if the shot file does not exist before
 
@@ -456,7 +473,7 @@ class FileRepo:
             shot_no: shot_no
             tag: tag
             attribute_dict: attribute_dict
-                            --> attribute_dict["attribute": data]
+                            --> attribute_dict{"attribute": data}
             overwrite: True -> remove the existed attribute, then write the new one
 
         Returns: None
@@ -488,11 +505,12 @@ class FileRepo:
     def write_label_file(self, file_path: str, label_dict: dict, overwrite=False):
         """
 
-        Write labels in one shot file with file path as input
+        Write a label dictionary in the meta group in one shot file with a file path as input.
+
         Args:
             file_path: file path
             label_dict: label_dict
-                        --> label_dict["label": data]
+                        --> label_dict{"label": data}
             overwrite: True -> remove the existed label, then write the new one
 
         Returns: None
@@ -521,11 +539,12 @@ class FileRepo:
     def write_label(self, shot_no: int, label_dict: dict, overwrite=False):
         """
 
-        Write labels in one shot file with shot number as input
+        Write a label dictionary in the meta group in one shot file with a shot number as input.
+
         Args:
             shot_no: shot_no
             label_dict: label_dict
-                        --> label_dict["label": data]
+                        --> label_dict{"label": data}
             overwrite: True -> remove the existed label, then write the new one
 
         Returns: None
@@ -537,7 +556,8 @@ class FileRepo:
     def sync_meta(self, meta_db: MetaDB, shot_list: List[int] = None, overwrite=False):
         """
 
-        Sync labels in the meta group of the shot file from MongoDB
+        Sync labels to the meta group of the shot file from MetaDB.
+
         Args:
             meta_db: initialized object of MetaDB
             shot_list: shot list
