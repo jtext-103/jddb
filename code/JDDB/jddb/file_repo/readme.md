@@ -1,8 +1,8 @@
 # How to use FileRepo 
 
-**file_repo** is a subpackages used to process HDF5 files.
+**`file_repo`** is a subpackage used to process HDF5 files.
 
-It has two classes **FileRepo** and **MDSDumper**.
+It has a class named **`FileRepo`**.
 
 ## Definition of the file format
 
@@ -320,43 +320,3 @@ The base folder should use $shot_x$ for template.
   meta_db = MetaDB(labels)
   file_repo.sync_meta(meta_db, shot_list)
   ```  
-
-## MDSDumper
-
-- **`MDSDumper(host_name, tree_name)`**
-  
-  MDSDumper is used to dump data from MDSplus (only support MDSpuls now)
-  
-  Example:
-  ```python
-  from jddb.file_repo import MDSDumper
-  dump = MDSDumper('1.1.1.1', 'jtext')
-  ```
-### Functions
-- **`connect`**
-  
-  Connect to the host
-
-- **`disconnect`**
-
-  Disconnect to the host
-
-- **`dumper(file_repo: FileRepo, shot_list, tag_list, overwrite=False)`**
-
-  Dump data from MDSPlus into the hdf5 shot file.
-  
-  - `FileRepo` a class from the module `file_repo.py`
-  - `overwrite` controls if the input data will overwrite the original data.
-  
-  Example:
-  ```python
-  from jddb.file_repo import FileRepo
-  from jddb.file_repo import MDSDumper
-  base_path = "\\data\\jtext\\$shot_2$XX\\$shot_1$XX\\"
-  file_repo = FileRepo(base_path)
-  shot_list = [1050000, 1050001]
-  tag_list = ['\\ip', '\\bt']
-  file_repo.get_files(shot_list, True)
-  dump = MDSDumper('1.1.1.1', 'jtext')
-  dump.dumper(file_repo, shot_list, tag_list) 
-  ```
