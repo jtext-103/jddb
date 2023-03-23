@@ -1,35 +1,107 @@
 # How to use MetaDB （老艾）
+## **ConnectDB**
+Connect or disconnect to MetaDB 
+   ```python
+   from JDDB import meta_db
+   c = meta_db.ConnectDB()
+   ```
 
-这里说一下明明，原来 tag 不清晰，现在明确一下 tag 值得是诊断的 tag，在 MetaDB 里面哪些 key value pair 叫做 label
 
-读写文件的都放在 FileRepo 里面了
-
-## Conntect to db
-
-- connect
-  connect(connection_string,collection)
-  connection string is the connections string to a mongodb server. collection is the collection for the MetaDB.  
-  connect befor any other action
-
-- disconnect()  
+- ### **c.connect(connection_str, collection)**
+  Description:   
+  Connect to MetaDB befor any other action.  
+  **Parameters: **  
+  connection_string : Dictionary. The connections string to a mongodb server. Such as "host", "port", "username", "password" and so on.   
+  collection : String. Collection name for the MetaDB.  
+  Return:  
+   Collection for the MetaDB
+  
+- ### **c.disconnect()**
+  Description:   
+  Disconnect from MetaDB after any other action.
   as name suggests.
 
-## Query
-
-- get_labels(shot_no)
-  just like db.tag(shot)
-
-  Example:
-
+  ### **Example :**
   ```python
-  # add examples here
+  # Connect to the MetaDB
+  connection_str = {
+            "host" : "localhost",
+            "port" : 27017,
+            "username" : "DDBUser",
+            "password" : "*******",
+            "database": "JDDB"
+          }
+  collection = "Labels"
+  c = meta_db.ConnectDB()
+  labels = c.connect(connection_str,collection)
+
+  # Disconnect from MetaDB
+  c.disconnect()
   ```
 
-- query(shot_list=None,filter=None)  
-  just like db.query(shotlist=None, filter=None)
 
-- query_valid(shot_list=None, label_true=None, label_false=None)
-  just like query_valid(shotlist=None, tag_true=None, tag_false=None)
+
+## **MetaDB**
+  Get meta or query eligible information from MetaDB.
+ ```python
+   from JDDB import meta_db
+   c = meta_db.ConnectDB()
+   labels = c.connect(connection_str,collection)
+   db = meta_db.MetaDB(labels)                 # import MetaDB 
+   ```
+
+- ### **db.get_labels(shot_no)**  
+  Description:  
+  Get all meta of the shot inputed  
+  Parameters:  
+  shot_no : int or string. The shot number whose meta you want to get.  
+  Return:  
+  Dictionary. The meta you want.
+
+  ### **Example :**
+  ```python
+  db.get_labels(1066648)
+
+  -Return:
+  {'shot': 1066648, 'ip': True, 'IsDisrupt': False, 'DownTime': 0.5923408076837159, 'bt': True, ... 'MA_TOR1_R09': True}
+  ```
+
+- ### **db.query(shot_list=None, filter=None)**
+  Description:   
+  Query the shots that meet the set conditions within the set shot number range.  
+  Parameters:  
+  shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.  
+  filter : Dictionary. The filter condition for the query. The description format of the condition must comply with Mongodb's specifications, and specific details can be found on the official website of Mongodb. If filter=None, Return all shot number in MetaDB.
+  Return:  
+  List. Shot number that meets the filter condition.  
+  ### **Example :**
+  ```python
+  my_query = {'IsDisrupt': True, 'IpFlat':{'$gt':50}}
+  db.query(my_query)
+
+  -Return:
+  [1046770, 1046794, 1046795, 1046806, 1046800 1046858, . . . , 1049184, 1050467, 1052286, 1050560, 1052295]
+  ```
+
+
+- ### **db.query_valid(shot_list=None, label_true=None, label_false=None)**
+  Description:   
+  For labels whose information stored in the database is True or False, return shot number that meets the filter condition.   
+  Parameters:  
+  shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.  
+  label_true : List of label names. Filter condition. The returned shots must satisfy that all labels in the label_true are True.  
+  label_false : List of label names. Filter condition. The returned shots must satisfy that all labels in the label_false are False.
+  Return:  
+  List. Shot number that meets the filter condition.
+  ### **Example :**  
+  Get non-disruption shots with [" ip", " bt"] diagnostics available in the shot number range of [1064000, 1066649]
+  ```python
+  shot_list = [x for x in range(1064000, 1066649+1)]
+  db.query(my_query)
+
+  -Return:
+  [1046770, 1046794, 1046795, 1046806, 1046800 1046858, . . . , 1049184, 1050467, 1052286, 1050560, 1052295]
+  ```
 
 - query_range(label_list, lower=None, upper=None, shot_list=None)
   这个有个小问题，这个智能查伦范围？能不能同时查询范围和诊断有效？  
