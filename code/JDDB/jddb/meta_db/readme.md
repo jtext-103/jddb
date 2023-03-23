@@ -27,7 +27,7 @@
     **Description:**  
       Disconnect from MetaDB after any other action.
 
-  ### **Example :**
+    **Example :**
       ```python
         # Connect to the MetaDB
         from jddb import meta_db
@@ -53,7 +53,7 @@
   **Return:**  
     Dictionary. The meta you want.
 
-  ### **Example :**
+  **Example :**
     ```python
     db.get_labels(1066648)
 
@@ -67,7 +67,7 @@
     shot_no : int or string. The shot number whose meta you want to update or modify.  
     labels : Dictionary. The meta contents you want to update or modify. 
 
-  ### **Example :**
+  **Example :**
     ```python
     new_meta = {'ip': True, 'IsDisrupt': False, 'DownTime': 0.59234, ...}
     db.updata_labels(1066648, new_meta)
@@ -81,7 +81,7 @@
     filter : Dictionary. The filter condition for the query. The description format of the condition must comply with Mongodb's specifications, and specific details can be found on the official website of Mongodb. If filter=None, Return all shot number in MetaDB.  
   **Return:**  
     List. Shot number that meets the filter condition.  
-  ### **Example :**
+  **Example :**
     ```python
     my_query = {'IsDisrupt': True, 'IpFlat':{'$gt':50}}
     db.query(my_query)
@@ -100,7 +100,7 @@
     label_false : List of label names. Filter condition. The returned shots must satisfy that all labels in the label_false are False.  
   **Return:**  
     List. Shot number that meets the filter condition.
-  ### **Example :**  
+  **Example :**  
     Get non-disruption shots with [" ip", " bt"] diagnostics available in the shot number range of [1064000, 1066649]
     ```python
     shot_list = [shot for shot in range(1064000, 1066649+1)]
@@ -120,7 +120,7 @@
     shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.    
   **Return:**  
     List. Shot number that meets the filter condition.
-  ### **Example :**  
+  **Example :**  
     Get shots with DownTime in [0.2, 0.8]s and average flat-top value of IP in [150, inf]KA within the shot number range of [1064000, 1066648].
     ```python
     shot_list = [shot for shot in range(1064000, 10666489)]
@@ -141,7 +141,7 @@
   **Return:**  
     When need_nd=False, only return one list, which is the list of shots available for all given diagnostic signals.  
     When need_nd=True, return three lists, which are the list of shots available for all given diagnostic signals, list of non-disruption shots, and list of disruption shots.
-  ### **Example :**  
+  **Example :**  
     ```python
     shot_list = [shot for shot in range(1064000, 10666489)]
     labels = ["ip", "bt", "polaris_den_v09"]
