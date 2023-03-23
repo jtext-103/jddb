@@ -99,7 +99,7 @@
     label_true : List of label names. Filter condition. The returned shots must satisfy that all labels in the label_true are True.  
     label_false : List of label names. Filter condition. The returned shots must satisfy that all labels in the label_false are False.  
   **Return:**  
-    List. Shot number that meets the filter condition.
+    List. Shot number that meets the filter condition.  
   **Example :**  
     Get non-disruption shots with [" ip", " bt"] diagnostics available in the shot number range of [1064000, 1066649]
     ```python
@@ -119,7 +119,7 @@
     upper_limit : List of upper limit values. "<=". If there is only an lower limit and no upper limit in the filter condition, the upper limit value in the corresponding position in the upper limit list is set to None.    
     shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.    
   **Return:**  
-    List. Shot number that meets the filter condition.
+    List. Shot number that meets the filter condition.  
   **Example :**  
     Get shots with DownTime in [0.2, 0.8]s and average flat-top value of IP in [150, inf]KA within the shot number range of [1064000, 1066648].
     ```python
@@ -140,7 +140,7 @@
     show : Bool. The default is True, which displays the number of shots available for each given diagnostic in the given shot number list, the number of shots available for all given diagnostic signals, and the number of non-disruption and disruption shots. If show=False, don't displayed.    
   **Return:**  
     When need_nd=False, only return one list, which is the list of shots available for all given diagnostic signals.  
-    When need_nd=True, return three lists, which are the list of shots available for all given diagnostic signals, list of non-disruption shots, and list of disruption shots.
+    When need_nd=True, return three lists, which are the list of shots available for all given diagnostic signals, list of non-disruption shots, and list of disruption shots.  
   **Example :**  
     ```python
     shot_list = [shot for shot in range(1064000, 10666489)]
