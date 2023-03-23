@@ -1,55 +1,50 @@
 # How to use MetaDB  
-## **ConnectDB**  
-Connect or disconnect to MetaDB  
-```python
-   from jddb import meta_db
-   c = meta_db.ConnectDB()
-```
-
-
-- ### **c.connect(connection_str, collection)**
-  **Description:**  
-    Connect to MetaDB befor any other action.  
-
-  **Parameters:**  
-    connection_string : Dictionary. The connections string to a mongodb server. Such as "host", "port", "username", "password" and so on.  
-    collection : String. Collection name for the MetaDB.  
-  **Return:**  
-    Collection for the MetaDB
-  
-- ### **c.disconnect()**
-  **Description:**  
-    Disconnect from MetaDB after any other action.
-
-  ### **Example :**
-  ```python
-  # Connect to the MetaDB
-  connection_str = {
-            "host" : "localhost",
-            "port" : 27017,
-            "username" : "DDBUser",
-            "password" : "*******",
-            "database": "JDDB"
-          }
-  collection = "Labels"
-  c = meta_db.ConnectDB()
-  labels = c.connect(connection_str,collection)
-
-  # Disconnect from MetaDB
-  c.disconnect()
-  ```
-
-
-
 ## **MetaDB**
   Get meta or query eligible information from MetaDB.
   ```python
-    from JDDB import meta_db
-    c = meta_db.ConnectDB()
-    labels = c.connect(connection_str,collection)
-    db = meta_db.MetaDB(labels)                 # import MetaDB 
+    from jddb import meta_db
+    connection_str = {
+              "host" : "localhost",
+              "port" : 27017,
+              "username" : "DDBUser",
+              "password" : "*******",
+              "database": "JDDB"
+            }
+    collection = "Labels"
+    db = meta_db.MetaDB(connection_str, collection)                  
   ```
+- ### **db.connect(connection_str, collection)**
+    **Description:**  
+      Connect to MetaDB befor any other action.  
 
+    **Parameters:**  
+      connection_string : Dictionary. The connections string to a mongodb server. Such as "host", "port", "username", "password" and so on.  
+      collection : String. Collection name for the MetaDB.  
+    **Return:**  
+      Collection of the MetaDB
+    
+- ### **db.disconnect()**
+    **Description:**  
+      Disconnect from MetaDB after any other action.
+
+  ### **Example :**
+      ```python
+        # Connect to the MetaDB
+        from jddb import meta_db
+        connection_str = {
+                  "host" : "localhost",
+                  "port" : 27017,
+                  "username" : "DDBUser",
+                  "password" : "*******",
+                  "database": "JDDB"
+                }
+        collection = "Labels"
+        db = meta_db.MetaDB()
+        labels = db.connect(connection_str,collection)
+
+        # Disconnect from MetaDB
+        db.disconnect()
+        ```
 - ### **db.get_labels(shot_no)**  
   **Description:** 
     Get all meta of the shot inputed  
@@ -64,6 +59,18 @@ Connect or disconnect to MetaDB
 
     -Return:
     {'shot': 1066648, 'ip': True, 'IsDisrupt': False, 'DownTime': 0.5923408076837159, 'bt': True, ... 'MA_TOR1_R09': True}
+    ```
+- ### **db.updata_labels(shot_no, labels)**
+  **Description:**  
+    Update or modify the meta of a shot in MetaDB.  
+  **Parameters:**  
+    shot_no : int or string. The shot number whose meta you want to update or modify.  
+    labels : Dictionary. The meta contents you want to update or modify. 
+
+  ### **Example :**
+    ```python
+    new_meta = {'ip': True, 'IsDisrupt': False, 'DownTime': 0.59234, ...}
+    db.updata_labels(1066648, new_meta)
     ```
 
 - ### **db.query(shot_list=None, filter=None)**
@@ -135,7 +142,6 @@ Connect or disconnect to MetaDB
     When need_nd=False, only return one list, which is the list of shots available for all given diagnostic signals.  
     When need_nd=True, return three lists, which are the list of shots available for all given diagnostic signals, list of non-disruption shots, and list of disruption shots.
   ### **Example :**  
-    Get shots with DownTime in [0.2, 0.8]s and average flat-top value of IP in [150, inf]KA within the shot number range of [1064000, 1066648].
     ```python
     shot_list = [shot for shot in range(1064000, 10666489)]
     labels = ["ip", "bt", "polaris_den_v09"]
@@ -147,28 +153,3 @@ Connect or disconnect to MetaDB
     ```python
     CompleteShots, NormalShots, DisruptShots = db.count_label(shot_list, labels, need_nd=True, show=False)
     ```
-## **UpdateDB**
-  Update or modify the content in MetaDB.
-  ```python
-    from JDDB import meta_db
-    c = meta_db.ConnectDB()
-    labels = c.connect(connection_str,collection)
-    up = meta_db.UpdateDB(labels)                 # import MetaDB 
-  ```
-- ### **up.put_labels(shot_no, labels)**
-  **Description:**  
-    Update or modify the meta of a shot in MetaDB.  
-  **Parameters:**  
-    shot_no : int or string. The shot number whose meta you want to update or modify.  
-    labels : Dictionary. The meta contents you want to update or modify. 
-
-  ### **Example :**
-    ```python
-    new_meta = {'ip': True, 'IsDisrupt': False, 'DownTime': 0.59234, ...}
-    up.put_labels(1066648, new_meta)
-    ```
-
-## **Finally, don't forget to disconnect from MetaDB after any other action.** 
-  ```python
-  c.disconnect()
-  ```
