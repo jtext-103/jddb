@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 from MDSplus import connection
 from typing import List
-from .file_repo import FileRepo
+from ..file_repo import FileRepo
 import time as delay_time
 
 

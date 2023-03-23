@@ -434,7 +434,6 @@ class Result:
 
         """
         true_dis_num = len(self.get_all_shots(include_no_truth=False))
-        result.warning_time_histogram("G:\datapractice\\test", [-1, 0, 0.06,0.3])
         plt.rcParams['font.family'] = 'Arial'
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
