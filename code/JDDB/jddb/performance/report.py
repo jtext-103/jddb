@@ -1,8 +1,7 @@
 from typing import List
 import pandas as pd
 import os
-from result import Result
-
+from .result import Result
 
 class Report:
 
@@ -112,11 +111,12 @@ class Report:
                 raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
 
 
-# if __name__ == '__main__':
-#     report = Report("G:\datapractice\\test\\report.xlsx")
-#     result = Result("G:\datapractice\\test\\test.xlsx")
-#     report.report_file()
-#     report.add(result, "test1", 0.02, 0.06)
-#     report.add(result, "test2", 0.03, 0.2)
-#     report.add(result, "test3", 0.02, 0.3)
-#     report.add(result, "test4", 0.02, 0.15)
+if __name__ == '__main__':
+    report = Report("G:\datapractice\\test\\report.xlsx")
+    result = Result("G:\datapractice\\test\\test.xlsx")
+    report.report_file()
+    report.add(result, "test1", 0.02, 0.06)
+    report.add(result, "test2", 0.03, 0.2)
+    report.add(result, "test3", 0.02, 0.3)
+    report.add(result, "test4", 0.02, 0.15)
+    report.save()
