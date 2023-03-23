@@ -3,35 +3,31 @@ import numpy as np
 from pymongo import MongoClient
 
 
-class ConnectDB(object):
+class MetaDB(object):
+    def __init__(self, connection_str, collection):
+        self.connect(connection_str, collection)
+
+
     def __init__(self):
-        self.client = None
+        self.labels = None
 
     def connect(self, connection_str, collection):
-        self.client = MongoClient(connection_str["host"], int(connection_str["port"]))
-        db = self.client[connection_str["database"]]
+        client = MongoClient(connection_str["host"], int(connection_str["port"]))
+        db = client[connection_str["database"]]
         if ("username" in connection_str.keys()) & ("password" in connection_str.keys()):
             db.authenticate(connection_str["username"], connection_str["password"])
         labels = db[collection]
-        return labels
+        self.labels = labels
 
     def disconnect(self):
-        if self.client is not None:
-            self.client.close()
-
-
-class UpdateDB(object):
-    def __init__(self, label_collection):
-        self.labels = label_collection
+        if self.labels is not None:
+            self.labels.close()
 
     def updata_labels(self, shot_no, labels):
         self.labels.update({"shot":int(shot_no)}, {"$set":labels}, True)
 
 
-class MetaDB(object):
-    def __init__(self, label_collection):
-        self.labels = label_collection
-
+    
     def get_labels(self, shot_no):
         result = self.labels.find_one({'shot': int(shot_no)}, {'_id': 0})
         return result
