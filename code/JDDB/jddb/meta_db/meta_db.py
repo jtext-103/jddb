@@ -86,25 +86,25 @@ class MetaDB(object):
         return shots
 
 
-    def query_range(self, label_list, lower=None, upper=None, shot_list=None):
-        if lower is None:
-            lower = [None for i in range(len(label_list))]
+    def query_range(self, label_list, lower_limit=None, upper_limit=None, shot_list=None):
+        if lower_limit is None:
+            lower_limit = [None for i in range(len(label_list))]
         else:
-            if len(label_list) != len(lower):
-                raise ValueError("label_list and lower are not the same length!")
-        if upper is None:
-            upper = [None for i in range(len(label_list))]
+            if len(label_list) != len(lower_limit):
+                raise ValueError("label_list and lower_limit are not the same length!")
+        if upper_limit is None:
+            upper_limit = [None for i in range(len(label_list))]
         else:
-            if len(label_list) != len(upper):
-                raise ValueError("label_list and upper are not the same length!")
+            if len(label_list) != len(upper_limit):
+                raise ValueError("label_list and upper_limit are not the same length!")
         filter = {}
         for i in range(len(label_list)):
-            if ((lower[i] != None) & (upper[i] != None)):
-                filter.update({label_list[i]:{"$gte":lower[i], "$lte":upper[i]}})
-            elif ((lower[i] == None) & (upper[i] != None)):
-                filter.update({label_list[i]: {"$lte": upper[i]}})
-            elif ((lower[i] != None) & (upper[i] == None)):
-                filter.update({label_list[i]: {"$gte": lower[i]}})
+            if ((lower_limit[i] != None) & (upper_limit[i] != None)):
+                filter.update({label_list[i]:{"$gte":lower_limit[i], "$lte":upper_limit[i]}})
+            elif ((lower_limit[i] == None) & (upper_limit[i] != None)):
+                filter.update({label_list[i]: {"$lte": upper_limit[i]}})
+            elif ((lower_limit[i] != None) & (upper_limit[i] == None)):
+                filter.update({label_list[i]: {"$gte": lower_limit[i]}})
         if shot_list is None:
             pass
         else:
