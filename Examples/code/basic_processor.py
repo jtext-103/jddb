@@ -197,13 +197,13 @@ class AlarmTag(BaseProcessor):
         fs = copy_signal.attributes['SampleRate']
         start_time = copy_signal.attributes['StartTime']
         if self.params[self._disruption_label] == 1:
-            undisrupt_number = int(fs * (self.params[self._downtime_label] + self.lead_time))
+            undisrupt_number = int(fs * (self.params[self._downtime_label] - self.lead_time - start_time))
             new_data = np.zeros(shape=undisrupt_number, dtype=int)
             disruptive_number = len(copy_signal.data)-undisrupt_number
             if disruptive_number > 0:
                 new_data = np.append(new_data, np.ones(shape=disruptive_number, dtype=int), axis=0)
         else:
-            new_data = np.zeros(shape=len(copy_signal.data), dtype=int)
+            new_data = np.zeros(shape=(len(copy_signal.data)-int(start_time * fs)), dtype=int)
 
         new_signal = Signal(data=new_data, attributes=dict())
         new_signal.attributes['SampleRate'] = fs

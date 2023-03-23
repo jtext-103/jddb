@@ -129,7 +129,7 @@ class Result:
         if len(err_list) > 0:
             raise ValueError("data of shot_no:{} has already existed".format(err_list))
 
-    def add(self, shot_no: List[int], predicted_disruption: List[bool], predicted_disruption_time: List[float] ):
+    def add(self, shot_no: List[int], predicted_disruption: List[int], predicted_disruption_time: List[float] ):
         """
             check lenth
             check repeated shoot,call check_repeated()
@@ -475,13 +475,13 @@ class Result:
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
-if __name__ == '__main__':
-    result = Result("G:\datapractice\\test\\test.xlsx")
-#     shot_list = [100561, 100562, 100563]
-#     true_disruption = [1, 0, 1]
-#     true_disruption_time = [0.13, 0.56, 0.41]
-#     result.add(shot_list, true_disruption, true_disruption_time)
-#     result.calc_metrics()
-#     result.remove([100563])
+# if __name__ == '__main__':
+#     result = Result("G:\datapractice\\test\\test.xlsx")
+# #     shot_list = [100561, 100562, 100563]
+# #     true_disruption = [1, 0, 1]
+# #     true_disruption_time = [0.13, 0.56, 0.41]
+# #     result.add(shot_list, true_disruption, true_disruption_time)
+# #     result.calc_metrics()
+# #     result.remove([100563])
 
 
