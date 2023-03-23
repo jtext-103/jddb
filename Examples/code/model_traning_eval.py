@@ -64,15 +64,15 @@ if __name__ == '__main__':
     test_file_repo = FileRepo(os.path.join(r'H:\rt\jddb\jddb\Examples\FileRepo', "$shot_2$00", "$shot_1$0"))
     test_shot_list = test_file_repo.get_all_shots()
     tag_list = test_file_repo.get_tag_list(test_shot_list[0])
-    is_disruot = []
+    is_disrupt = []
     for threshold in test_shot_list:
         dis_label = test_file_repo.read_labels(threshold, ['IsDisrupt'])
-        is_disruot.append(dis_label['IsDisrupt'])
+        is_disrupt.append(dis_label['IsDisrupt'])
 
-    # train test split on shot not sample
+    # train test split on shot not sample according to whether shots are disruption
     # %%
     train_shots, test_shots, _, _ = \
-        train_test_split(test_shot_list, is_disruot, test_size=0.2, random_state=1, shuffle=True, stratify=is_disruot)
+        train_test_split(test_shot_list, is_disrupt, test_size=0.2, random_state=1, shuffle=True, stratify=is_disrupt)
 
     # # create x and y matrix for ML models
     # # %%
@@ -118,20 +118,20 @@ if __name__ == '__main__':
     # 改一下注释
     test_result = Result(r'..\test\test_result.csv')
     sample_result = dict()
-    shot_nos=test_shots
-    shots_pred_disrurption=[]
-    shots_pred_disruption_time=[]
+    shot_nos=test_shots  # shot list
+    shots_pred_disrurption=[]  # shot predict result
+    shots_pred_disruption_time=[]  # shot predict time
     for shot in test_shots:
         X, _ = matrix_build([shot], test_file_repo, tag_list)
-        y_pred = gbm.predict(X, num_iteration=gbm.best_iteration)
-        sample_result.setdefault(shot, []).append(y_pred)  # save sample result to a dict
+        y_pred = gbm.predict(X, num_iteration=gbm.best_iteration)  # get sample result from LightGBM
+        sample_result.setdefault(shot, []).append(y_pred)  # save sample results to a dict
 
     # using the sample reulst to predict disruption on shot, and save result to result file using result module.
-        predicted_disruption, predicted_disruption_time = get_shot_result(y_pred, .5)
+        predicted_disruption, predicted_disruption_time = get_shot_result(y_pred, .5)  # get shot result with a threshold
         shots_pred_disrurption.append(predicted_disruption)
         shots_pred_disruption_time.append(predicted_disruption_time)
     test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
-    test_result.get_all_truth(shot_nos)
+    test_result.get_all_truth(shot_nos)  # get true disruption label and time
     test_result.lucky_guess_threshold = .1
     test_result.tardy_alarm_threshold = .005
     test_result.calc_metrics()
@@ -165,7 +165,6 @@ if __name__ == '__main__':
         # add result to the report
         test_report.add(temp_test_result, "thr="+str(threshold))
 
-    # find best result
 
-    # plot all metrics
+    # plot all metrics with roc
     test_report.plot_roc(../test/)
