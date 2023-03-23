@@ -273,7 +273,7 @@ class FileRepo:
         Returns: None
 
         """
-        file = self._open_file(file_path)
+        file = self._open_file(file_path, 'r+')
         if file:
             data_group = file.get('data')
             if data_group is None:
@@ -315,7 +315,7 @@ class FileRepo:
 
         """
         file_path = self.get_file(shot_no)
-        file = self._open_file(file_path)
+        file = self._open_file(file_path, 'r+')
         if file:
             data_group = file.get('data')
             if data_group is None:
@@ -345,7 +345,7 @@ class FileRepo:
         Returns: None
 
         """
-        file = self._open_file(file_path)
+        file = self._open_file(file_path, 'r+')
         if file:
             meta_group = file.get('meta')
             if meta_group is None:
