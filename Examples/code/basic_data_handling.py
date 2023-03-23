@@ -1,22 +1,22 @@
 # This example show how you query shot and read data from if
 # import jddb modules
-from JDDB import MetaDB
+from JDDB import meta_db
 from JDDB import file_repo
 
-# connect to the MetaDB
+# connect to the meta_db
 connection_str = {
             "host" : "localhost",
-            "port" : 8017,
+            "port" : 27017,
             "username" : "DDBUser",
             "password" : "*******",
             "database": "JDDB"
           }
 collection = "Labels"
-c = MetaDB.ConnectDB()
+c = meta_db.ConnectDB()
 labels = c.connect(connection_str, collection)
 
 # connnect to the FileDB
-FileDB = MetaDB.MetaDB(labels)
+FileDB = meta_db.MetaDB(labels)
 
 # find all the shot with shot_no in range [10000, 20000] && [IP, BT] available && is disruption
 shot_list = [shot for shot in range(10000, 20000 + 1)]
@@ -35,7 +35,7 @@ chosen_shots = FileDB.query_range(
                 shot_list=complete_disruption_shots
 )
 
-# sync MetaDB label to shot file, shot_no [10000, 10001]
+# sync meta_db label to shot file, shot_no [10000, 10001]
 file_repo.sync_meta(FileDB, [10000, 10001])
 
 # plot ip and some diagnostics.
