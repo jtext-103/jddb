@@ -129,7 +129,7 @@ class Result:
         if len(err_list) > 0:
             raise ValueError("data of shot_no:{} has already existed".format(err_list))
 
-    def add(self, shot_no: List[int], predicted_disruption: List[bool], predicted_disruption_time: List[float], ):
+    def add(self, shot_no: List[int], predicted_disruption: List[bool], predicted_disruption_time: List[float] ):
         """
             check lenth
             check repeated shoot,call check_repeated()
