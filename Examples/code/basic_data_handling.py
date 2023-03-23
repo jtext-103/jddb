@@ -1,7 +1,7 @@
 # This example show how you query shot and read data from if
 # import jddb modules
-from JDDB import meta_db
-from JDDB import file_repo
+from jddb import meta_db
+from jddb import file_repo
 
 # connect to the meta_db
 connection_str = {
