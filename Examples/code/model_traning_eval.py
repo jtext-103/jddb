@@ -11,7 +11,6 @@ import os
 from sklearn.model_selection import train_test_split
 from jddb.performance import Result
 from jddb.performance import Report
-from jddb.performance import Roc
 from jddb.file_repo import FileRepo
 
 
@@ -28,12 +27,16 @@ def matrix_build(shot_list, file_repo, tags):
     """
     x_set = []
     y_set = []
-    for i in range(len(shot_list)):
-        x_data = file_repo.read_data(shot_list[i], tags)
-        res = np.array([list(x_data.values())]).T
+    for shot in shot_list:
+        x_data = file_repo.read_data(shot, tags)
+        # popKeys = ['\\vl','\\sxr_c_mean','\\fft_fre','\\fft_amp','\\alram_tag']
+        # [x_data.pop(k) for k in popKeys]
+        res = np.array(list(x_data.values())).T
         x_set.append(np.delete(res, 3, 1))
-        y_set = res[:, 3]
-    return x_set, y_set
+        y_set.append(res[:, 3])
+    x_array = np.array(x_set)
+    y_array = np.array(y_set)
+    return x_array, y_array
 
 
 def get_shot_result(y_red, threshold_sample):
@@ -131,40 +134,40 @@ if __name__ == '__main__':
         shots_pred_disrurption.append(predicted_disruption)
         shots_pred_disruption_time.append(predicted_disruption_time)
     test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
-    test_result.get_all_truth(shot_nos)  # get true disruption label and time
-    test_result.lucky_guess_threshold = .1
-    test_result.tardy_alarm_threshold = .005
-    test_result.calc_metrics()
-    test_result.save()
-    print("precision = " + str(test_result.get_precision()))
-    print("tpr = " + str(test_result.ture_positive_rate()))
-    test_result.confusion_matrix()
-    test_result.warning_time_histogram('../test/', [-1,.002,.01,.05,.1,.3])
-    test_result.accumulate_warning_time_plot('../test/')
-
-    # simply chage different disruptivity triggering level and logic, get many result.
-    test_report = Report('../test/report.csv')
-    thresholds = np.linspace(0, 1, 50)
-    for threshold in thresholds:
-        # %% evaluation
-        shot_nos = test_shots
-        shots_pred_disrurption = []
-        shots_pred_disruption_time = []
-        for shot in test_shots:
-            y_pred = sample_result[shot][0]
-            predicted_disruption, predicted_disruption_time = get_shot_result(y_pred, threshold)
-            shots_pred_disrurption.append(predicted_disruption)
-            shots_pred_disruption_time.append(predicted_disruption_time)
-        # i dont save so the file never get created
-        temp_test_result=Result('../test/temp_result.csv')
-        temp_test_result.lucky_guess_threshold = .1
-        temp_test_result.tardy_alarm_threshold = .005
-        temp_test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
-        temp_test_result.get_all_truth(shot_nos)
-
-        # add result to the report
-        test_report.add(temp_test_result, "thr="+str(threshold))
-
-
-    # plot all metrics with roc
-    test_report.plot_roc(../test/)
+    # test_result.get_all_truth(shot_nos)  # get true disruption label and time
+    # test_result.lucky_guess_threshold = .1
+    # test_result.tardy_alarm_threshold = .005
+    # test_result.calc_metrics()
+    # test_result.save()
+    # print("precision = " + str(test_result.get_precision()))
+    # print("tpr = " + str(test_result.ture_positive_rate()))
+    # test_result.confusion_matrix()
+    # test_result.warning_time_histogram('../test/', [-1,.002,.01,.05,.1,.3])
+    # test_result.accumulate_warning_time_plot('../test/')
+    #
+    # # simply chage different disruptivity triggering level and logic, get many result.
+    # test_report = Report('../test/report.csv')
+    # thresholds = np.linspace(0, 1, 50)
+    # for threshold in thresholds:
+    #     # %% evaluation
+    #     shot_nos = test_shots
+    #     shots_pred_disrurption = []
+    #     shots_pred_disruption_time = []
+    #     for shot in test_shots:
+    #         y_pred = sample_result[shot][0]
+    #         predicted_disruption, predicted_disruption_time = get_shot_result(y_pred, threshold)
+    #         shots_pred_disrurption.append(predicted_disruption)
+    #         shots_pred_disruption_time.append(predicted_disruption_time)
+    #     # i dont save so the file never get created
+    #     temp_test_result=Result('../test/temp_result.csv')
+    #     temp_test_result.lucky_guess_threshold = .1
+    #     temp_test_result.tardy_alarm_threshold = .005
+    #     temp_test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
+    #     temp_test_result.get_all_truth(shot_nos)
+    #
+    #     # add result to the report
+    #     test_report.add(temp_test_result, "thr="+str(threshold))
+    #
+    #
+    # # plot all metrics with roc
+    # test_report.plot_roc(../test/)
