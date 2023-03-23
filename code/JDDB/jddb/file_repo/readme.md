@@ -32,7 +32,7 @@ The base folder should use $shot_x$ for template.
 
 - **`FileRepo(base_path)`**
 
-  base path contains template same as BM design "\\data\\jtext\\$shot_2$XX\\$shot_1$XX\\"
+  base path contains template same as BM design `\\data\\jtext\\$shot_2$XX\\$shot_1$XX\\`
   
   Example:
   
