@@ -77,7 +77,6 @@ class Report:
             index, ['model_name', 'accuracy', 'precision', 'recall', 'fpr', 'tpr', 'tp', 'fn', 'fp',
                     'tn']] = \
             [model_name, accuracy, precision, recall, fpr, tpr, tp, fn, fp, tn]
-        self.save()
 
     def remove(self, model_name: List[str]):
         """
