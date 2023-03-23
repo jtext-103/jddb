@@ -54,7 +54,7 @@ picture_path = "G:\\datapractice\\example_lry\\example_result_data\\fre_picture"
 source_shots_path = os.path.join(source_shots_path, "$shot_2$XX", "$shot_1$X")
 processed_shots_path = os.path.join(processed_shots_path, "$shot_2$00", "$shot_1$0")
 
-def read_config(file_name:str):
+def read_config(file_name: str):
     """"读取配置"""
     with open(file_name, 'r', encoding='UTF-8') as f:
         config = json.load(f)
