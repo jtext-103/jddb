@@ -162,7 +162,7 @@ if __name__ == '__main__':
     all_tags = list(processed_shotset.get_shot(shot_list[0]).tags)
     processed_shotset = processed_shotset.process(
         processor=ClipProcessor(
-            start_time=clip_start_time, end_time_tag="DownTime"),
+            start_time=clip_start_time, end_time_label="DownTime"),
         input_tags=all_tags,
         output_tags=all_tags,
         save_repo=processed_file_repo)
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     # plot the result
     # p1 ip
     # p2 fft
-    shot_plt = processed_shotset.get_shot(shot_list[0])
+    shot_plt = processed_shotset.get_shot(shot_list[2])
     signal_ip = shot_plt.get("\\ip")  # p1
     signal_MA_amp = shot_plt.get("\\fft_amp")  # p2
     signal_MA_fre = shot_plt.get("\\fft_fre")  # p2
@@ -217,3 +217,5 @@ if __name__ == '__main__':
     plt.grid(axis="x", linestyle='-.', which='major')
     plt.suptitle(str(shot_list[0]) + "_5ms", x=0.5, y=0.98)
     plt.show()
+
+# %%
