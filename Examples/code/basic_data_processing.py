@@ -51,8 +51,8 @@ overlap = 0.9
 clip_start_time = 0.05
 
 # file repo paths
-source_shots_path = "..//FileRepo//TestShots//$shot_2$xx//$shot_1$x//"
-processed_shots_path = "..//FileRepo//ProcessedShots//$shot_2$xx//$shot_1$x//"
+source_shots_path = "..//FileRepo//TestShots//$shot_2$XX//$shot_1$X//"
+processed_shots_path = "..//FileRepo//ProcessedShots//$shot_2$XX//$shot_1$X//"
 image_path = "..//FileRepo//_temp_image//"
 
 # %% define some helper functions

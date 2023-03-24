@@ -60,7 +60,7 @@ def get_shot_result(y_red, threshold_sample):
 if __name__ == '__main__':
     # init FileRepo and MetaDB
     # %%
-    test_file_repo = FileRepo("..//FileRepo//ProcessedShots//$shot_2$00//$shot_1$0//")
+    test_file_repo = FileRepo("..//FileRepo//ProcessedShots//$shot_2$XX//$shot_1$X//")
     test_shot_list = test_file_repo.get_all_shots()
     tag_list = test_file_repo.get_tag_list(test_shot_list[0])
     is_disrupt = []
