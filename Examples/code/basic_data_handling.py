@@ -19,7 +19,7 @@ collection = "Labels"
 db = MetaDB(connection_str, collection)
 
 # %%
-#  find all the shot with shot_no in range [10000, 20000] && [IP, BT] tags available && is disruption
+#  find all the shot with shot_list in range [10000, 20000] && [IP, BT] tags available && is disruption
 shot_list = [shot for shot in range(1000000, 2000000)]
 complete_disruption_shots = db.query_valid(
     shot_list=shot_list,

@@ -13,7 +13,9 @@ from ..file_repo import FileRepo
 
 
 class Result:
-    SHOT_NO_H = 'shot_no'
+    IS_DISRUPT = "IsDisrupt"
+    DOWN_TIME = "DownTime"
+    SHOT_NO_H = 'shot_list'
     PREDICTED_DISRUPTION_H = 'predicted_disruption'
     PREDICTED_DISRUPTION_TIME_H = 'predicted_disruption_time'
     ACTUAL_DISRUPTION_H = 'actual_disruption'
@@ -83,73 +85,73 @@ class Result:
         Returns: shot_list: a list of shot number
 
         """
-        shot_list = self.result.shots.tolist()
+        shot_list = self.result[self.SHOT_NO_H].tolist()
         if include_all is False:
             tmp_shot_list = []
             for shot_no in shot_list:
-                true_disruption_time = self.result.loc[self.result.shots == shot_no, self.ACTUAL_DISRUPTION_TIME_H].tolist()[0]
+                true_disruption_time = self.result.loc[self.result[self.SHOT_NO_H] == shot_no, self.ACTUAL_DISRUPTION_TIME_H].tolist()[0]
                 if true_disruption_time is not None:
                     tmp_shot_list.append(shot_no)
             shot_list = tmp_shot_list
         return shot_list
 
-    def check_unexisted(self, shot_no: Optional[List[int]] = None):
+    def check_unexisted(self, shot_list: Optional[List[int]] = None):
 
         """
-            check whehter shot_no existed
+            check whehter shot_list existed
             if unexisted, raise error
-            if shot_no is None ,call get all shots()
+            if shot_list is None ,call get all shots()
         """
         err_list = []
-        for i in range(len(shot_no)):
-            if shot_no[i] not in self.result.shots.tolist():
-                err_list.append(shot_no[i])
+        for i in range(len(shot_list)):
+            if shot_list[i] not in self.result[self.SHOT_NO_H].tolist():
+                err_list.append(shot_list[i])
             if len(err_list) > 0:
                 raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
-        if shot_no is None:
-            shot_no = self.get_all_shots(include_all=True)
-        return shot_no
+        if shot_list is None:
+            shot_list = self.get_all_shots(include_all=True)
+        return shot_list
 
-    def check_repeated(self, shot_no: Optional[List[int]]):
+    def check_repeated(self, shot_list: Optional[List[int]]):
         """
-            check whehter shot_no repeated
+            check whehter shot_list repeated
             if repeated, raise error
         Args:
-            shot_no: a list of shot number
+            shot_list: a list of shot number
         """
 
         err_list = []
-        for i in range(len(shot_no)):
-            if shot_no[i] in self.result.shots.tolist():
-                err_list.append(shot_no[i])
+        for i in range(len(shot_list)):
+            if shot_list[i] in self.result[self.SHOT_NO_H].tolist():
+                err_list.append(shot_list[i])
         if len(err_list) > 0:
-            raise ValueError("data of shot_no:{} has already existed".format(err_list))
+            raise ValueError("data of shot_list:{} has already existed".format(err_list))
 
-    def add(self, shot_no: List[int], predicted_disruption: List[int], predicted_disruption_time: List[float]):
+    def add(self, shot_list: List[int], predicted_disruption: List[int], predicted_disruption_time: List[float]):
         """
             check lenth
             check repeated shot, if duplicated overwrite
         Args:
-            shot_no: a list of shot number
+            shot_list: a list of shot number
             predicted_disruption:   a list of value 0 or 1, is disruptive
             predicted_disruption_time: a list of predicted_disruption_time, unit :s
         """
-        if not (len(shot_no) == len(predicted_disruption) == len(predicted_disruption_time)):
+        if not (len(shot_list) == len(predicted_disruption) == len(predicted_disruption_time)):
             raise ValueError('The inputs do not share the same length.')
 
-        for i in range(len(shot_no)):
-            shot = shot_no[i]
+        for i in range(len(shot_list)):
+            shot = shot_list[i]
             if predicted_disruption[i] == 0:
                 predicted_disruption_time[i] = -1
             # check if key already exists in the dataframe
-            if shot_no[i] in self.result[self.SHOT_NO_H].values:
+            if shot_list[i] in self.result[self.SHOT_NO_H].values:
                 # update the row with matching key
                 self.result.loc[self.result[self.SHOT_NO_H] == shot, [self.SHOT_NO_H, self.PREDICTED_DISRUPTION_H,
                                                                       self.PREDICTED_DISRUPTION_TIME_H]] = \
-                    [shot_no[i], predicted_disruption[i], predicted_disruption_time[i]]
+                    [shot_list[i], predicted_disruption[i], predicted_disruption_time[i]]
             else:
                 # insert new row
-                new_row = {self.SHOT_NO_H: int(shot_no[i]), self.PREDICTED_DISRUPTION_H: predicted_disruption[i],
+                new_row = {self.SHOT_NO_H: int(shot_list[i]), self.PREDICTED_DISRUPTION_H: predicted_disruption[i],
                            self.PREDICTED_DISRUPTION_TIME_H: predicted_disruption_time[i]}
                 self.result = self.result.append(new_row, ignore_index=True)
 
@@ -158,16 +160,17 @@ class Result:
             get all true_disruption and true_downtime of exsit shot number from meta_db, if duplicated overwrite
         """
 
+
         shots = self.get_all_shots()
         for shot in shots:
-            true_disruption = meta_db.get_labels(shot)[self.ACTUAL_DISRUPTION_H]
+            true_disruption = meta_db.get_labels(shot)[self.IS_DISRUPT]
 
             if true_disruption == False:
                 true_disruption = 0
                 true_downtime = -1
             else:
                 true_disruption = 1
-                true_downtime = meta_db.get_labels(shot)[self.ACTUAL_DISRUPTION_TIME_H]
+                true_downtime = meta_db.get_labels(shot)[self.DOWN_TIME]
             self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_H] = true_disruption
             self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_TIME_H] = true_downtime
 
@@ -178,31 +181,31 @@ class Result:
 
         shots = file_repo.get_all_shots()
         for shot in shots:
-            true_disruption = file_repo.read_labels(shot)[self.ACTUAL_DISRUPTION_H]
+            true_disruption = file_repo.read_labels(shot)[self.IS_DISRUPT]
 
             if true_disruption == False:
                 true_disruption = 0
                 true_downtime = -1
             else:
                 true_disruption = 1
-                true_downtime = file_repo.read_labels(shot)[self.ACTUAL_DISRUPTION_TIME_H]
+                true_downtime = file_repo.read_labels(shot)[self.DOWN_TIME]
             self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_H] = true_disruption
             self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_TIME_H] = true_downtime
 
 
-    def remove(self, shot_no: List[int]):
+    def remove(self, shot_list: List[int]):
         """
 
                 giving model_name to remove the specified row
         Args:
-            shot_no: a list of shot number
+            shot_list: a list of shot number
 
 
         """
 
-        shot_no = self.check_unexisted(shot_no)
-        for i in range(len(shot_no)):
-            self.result = self.result.drop(self.result[self.result.shots == shot_no[i]].index)
+        shot_list = self.check_unexisted(shot_list)
+        for i in range(len(shot_list)):
+            self.result = self.result.drop(self.result[self.result[self.SHOT_NO_H] == shot_list[i]].index)
 
 
     def get_y(self):
@@ -232,19 +235,19 @@ class Result:
                 There is a special case while true_disruption_time == -1 and predicted_disruption == 1,
             warning_time = predicted_disruption_time
         """
-        shot_no = self.shots
-        for i in range(len(shot_no)):
+        shot_list = self.shots
+        for i in range(len(shot_list)):
             predicted_disruption_time = \
-                self.result.loc[self.result.shots == shot_no[i], self.PREDICTED_DISRUPTION_TIME_H].tolist()[0]
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.PREDICTED_DISRUPTION_TIME_H].tolist()[0]
             true_disruption_time = \
-                self.result.loc[self.result.shots == shot_no[i], self.ACTUAL_DISRUPTION_TIME_H].tolist()[0]
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.ACTUAL_DISRUPTION_TIME_H].tolist()[0]
             predicted_disruption = \
-                self.result.loc[self.result.shots == shot_no[i], self.PREDICTED_DISRUPTION_H].tolist()[0]
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.PREDICTED_DISRUPTION_H].tolist()[0]
             if true_disruption_time == -1 and predicted_disruption == 1:
-                self.result.loc[self.result.shots == shot_no[
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[
                     i], self.WARNING_TIME_H] = predicted_disruption_time
             else:
-                self.result.loc[self.result.shots == shot_no[
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[
                     i], self.WARNING_TIME_H] = true_disruption_time - predicted_disruption_time
 
     def get_y_pred(self):
@@ -260,13 +263,12 @@ class Result:
                     set y_pred = 0 and warning_time = -1 while predicted_disruption == 0
         """
         y_pred = []
-        shot_no = self.shots
+        shot_list = self.shots
 
-        for i in range(len(shot_no)):
-            warning_time = self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME_H].tolist()[0]
-            predicted_disruption = self.result.loc[self.result.shots == shot_no[i], self.PREDICTED_DISRUPTION_H].tolist()[
+        for i in range(len(shot_list)):
+            warning_time = self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0]
+            predicted_disruption = self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.PREDICTED_DISRUPTION_H].tolist()[
                 0]
-            # true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
             if predicted_disruption == 1:
                 if self.ignore_thresholds is True:
                     y_pred.append(1)
@@ -275,15 +277,15 @@ class Result:
                         y_pred.append(1)
                     else:
                         y_pred.append(0)
-                        self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME_H] = -1
+                        self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H] = -1
             else:
                 y_pred.append(0)
-                self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME_H] = -1
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H] = -1
         self.y_pred = y_pred
 
     def get_y_true(self):
         """
-            whether self.shot_no = shot_no
+            whether self.shot_list = shot_list
             get y_true: a list of value 0 or 1, 1 is right
 
         Returns:
@@ -291,45 +293,45 @@ class Result:
         """
 
         y_true = []
-        shot_no = self.shots
+        shot_list = self.shots
         y_true = []
-        for i in range(len(shot_no)):
+        for i in range(len(shot_list)):
             y_true.append(
-                self.result.loc[self.result.shots == shot_no[i], self.ACTUAL_DISRUPTION_H].tolist()[0])
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.ACTUAL_DISRUPTION_H].tolist()[0])
         self.y_true = y_true
 
     def calc_metrics(self):
         """
             this function should be called before setting self.tardy_alarm_threshold and self.lucky_guess_threshold ,
-            whether self.shot_no = shot_no
-            get y_pred, shot_no
+            whether self.shot_list = shot_list
+            get y_pred, shot_list
             compute warning_time, true_positive, false_positive
 
         """
 
         self.get_y()
-        shot_no = self.shots
+        shot_list = self.shots
         y_pred = self.y_pred
 
-        for i in range(len(shot_no)):
-            true_disruption = self.result.loc[self.result.shots == shot_no[i], self.ACTUAL_DISRUPTION_H].tolist()[0]
+        for i in range(len(shot_list)):
+            true_disruption = self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.ACTUAL_DISRUPTION_H].tolist()[0]
             if true_disruption == 1 and y_pred[i] == 1:
-                self.result.loc[self.result.shots == shot_no[i], self.TRUE_POSITIVE_H] = 1
-                self.result.loc[self.result.shots == shot_no[i], self.FALSE_POSITIVE_H] = 0
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.TRUE_POSITIVE_H] = 1
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.FALSE_POSITIVE_H] = 0
 
             elif true_disruption == 0 and y_pred[i] == 1:
-                self.result.loc[self.result.shots == shot_no[i], self.TRUE_POSITIVE_H] = 0
-                self.result.loc[self.result.shots == shot_no[i], self.FALSE_POSITIVE_H] = 1
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.TRUE_POSITIVE_H] = 0
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.FALSE_POSITIVE_H] = 1
 
             elif true_disruption == 0 and y_pred[i] == 0:
-                self.result.loc[self.result.shots == shot_no[i], self.TRUE_POSITIVE_H] = 0
-                self.result.loc[self.result.shots == shot_no[i], self.FALSE_POSITIVE_H] = 0
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.TRUE_POSITIVE_H] = 0
+                self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.FALSE_POSITIVE_H] = 0
 
     def confusion_matrix(self):
         """
             this function should be called before call self.calc_metrics() ,
-            whether self.shot_no = shot_no
-            get y_pred, shot_no
+            whether self.shot_list = shot_list
+            get y_pred, shot_list
             compute confusion_matrix
         Returns:
             ture postive, false negative, false postive, ture negative
@@ -400,8 +402,8 @@ class Result:
     def warning_time_histogram(self, file_path: str, time_bins: List[float]):
         """
                 this function should be called before call self.calc_metrics().
-                Plot a column chart, the x axis is time range,
-            the y axis is the number of shot less in that time period.
+                Plot a column chart, the x-axis is time range,
+            the y-axis is the number of shot less in that time period.
         Args:
             file_path:    the path to save .png
             time_bins:    a time endpoint list, unit: s
@@ -413,13 +415,13 @@ class Result:
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
         warning_time_list = []
-        shot_no = self.get_all_shots(include_all=False)
+        shot_list = self.get_all_shots(include_all=False)
         if len(set(self.get_all_shots(include_all=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
-        for i in range(len(shot_no)):
-            if self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME_H].tolist()[0] != -1:
-                warning_time_list.append(self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME_H].tolist()[0])
-        warning_time_list = np.array(warning_time_list)  # s#预测时间
+        for i in range(len(shot_list)):
+            if self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0] != -1:
+                warning_time_list.append(self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0])
+        warning_time_list = np.array(warning_time_list)
 
         time_segments = pd.cut(warning_time_list, time_bins, right=False)
         print(time_segments)
@@ -442,8 +444,8 @@ class Result:
 
         """
                 this function should be called before call self.calc_metrics().
-                Plot a column chart, the x axis is time range,
-            the y axis is the number of shot less in that time period.
+                Plot a column chart, the x-axis is time range,
+            the y-axis is the number of shot less in that time period.
         Args:
             output_dir:    the path to save .png
             true_dis_num:    the number of true_disruptive
@@ -454,12 +456,12 @@ class Result:
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
         warning_time_list = []
-        shot_no = self.get_all_shots(include_all=False)
+        shot_list = self.get_all_shots(include_all=False)
         if len(set(self.get_all_shots(include_all=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
-        for i in range(len(shot_no)):
-            if self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME_H].tolist()[0] != -1:
-                warning_time_list.append(self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME_H].tolist()[0])
+        for i in range(len(shot_list)):
+            if self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0] != -1:
+                warning_time_list.append(self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0])
         warning_time = np.array(warning_time_list)  # ms->s#预测时间
         warning_time.sort()  #
         accu_frac = list()

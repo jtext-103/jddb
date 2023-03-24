@@ -6,7 +6,18 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.metrics import auc
 
+
 class Report:
+    MODEL_NAME = 'model_name'
+    ACCURACY = 'accuracy'
+    PRECISION = 'precision'
+    RECALL = 'recall'
+    FPR = 'fpr'
+    TPR = 'tpr'
+    TP = 'tp'
+    FN = 'fn'
+    FP = 'fp'
+    TN = 'tn'
 
     def __init__(self, report_csv_path: str):
 
@@ -17,7 +28,8 @@ class Report:
             if exists, read it populate self: call read.
         """
 
-        self.__header = ['model_name', 'accuracy', 'precision', 'recall', 'fpr', 'tpr', 'tp', 'fn', 'fp', 'tn']
+        self.__header = [self.MODEL_NAME, self.ACCURACY, self.PRECISION, self.RECALL, self.FPR, self.TPR, self.TP,
+                         self.FN, self.FP, self.TN]
         self.report = None
         if os.path.exists(self.report_csv_path):
             self.read()
@@ -61,7 +73,7 @@ class Report:
             lucky_guess_threshold: unit:s
 
         """
-        self.check_repeat(model_name)
+
         result.calc_metrics()
         tpr, fpr = result.ture_positive_rate()
         accuracy = result.get_accuracy()
@@ -69,10 +81,20 @@ class Report:
         recall = result.get_recall()
         tp, fn, fp, tn = result.confusion_matrix()
         index = len(self.report)
-        self.report.loc[
-            index, ['model_name', 'accuracy', 'precision', 'recall', 'fpr', 'tpr', 'tp', 'fn', 'fp',
-                    'tn']] = \
-            [model_name, accuracy, precision, recall, fpr, tpr, tp, fn, fp, tn]
+        # check if key already exists in the dataframe
+        if model_name in self.report[self.MODEL_NAME].values:
+            # update the row with matching key
+            self.report.loc[self.report[self.MODEL_NAME] == model_name, [self.MODEL_NAME, self.ACCURACY, self.PRECISION,
+                                                                         self.RECALL,
+                                                                         self.FPR, self.TPR, self.TP, self.FN, self.FP,
+                                                                         self.TN]] = \
+                [model_name, accuracy, precision, recall, fpr, tpr, tp, fn, fp, tn]
+        else:
+            # insert new row
+            new_row = {self.MODEL_NAME: model_name, self.ACCURACY: accuracy, self.PRECISION: precision,
+                       self.RECALL: recall,
+                       self.FPR: fpr, self.TPR: tpr, self.TP: tp, self.FN: fn, self.FP: fp, self.TN: tn}
+            self.report = self.report.append(new_row, ignore_index=True)
 
     def remove(self, model_name: List[str]):
         """
@@ -80,18 +102,11 @@ class Report:
         Args:
             model_name: a list of model
         """
-        if model_name in self.report['model_name'].values:
+        if model_name in self.report[self.MODEL_NAME].values:
             for i in range(len(model_name)):
-                self.report = self.report.drop(self.report[self.report.model_name == model_name[i]].index)
-
-    def check_repeat(self, model_name: str):
-        """
-            check existing model_name, if existing, raise error
-        Args:
-            model_name: a list of model
-        """
-        if model_name in self.report.model_name.tolist():
-            raise ValueError("data of model_name:{} has already existed".format(model_name))
+                self.report = self.report.drop(self.report[self.report[self.MODEL_NAME] == model_name[i]].index)
+        else:
+            pass
 
     def roc(self, roc_file_path):
         """
@@ -101,8 +116,8 @@ class Report:
 
         """
 
-        fpr = self.report.fpr.tolist()
-        tpr = self.report.tpr.tolist()
+        fpr = self.report.report[self.FPR].tolist()
+        tpr = self.report.report[self.TPR].tolist()
         tpr_ordered = []
         index = np.array(fpr).argsort()
         for i in index:
@@ -123,7 +138,6 @@ class Report:
         plt.legend(loc="lower right")
         plt.savefig(os.path.join(roc_file_path, 'Receiver_operating_characteristic.png'), dpi=300)
         plt.show(block=True)
-
 
 # if __name__ == '__main__':
 #     report = Report("G:\datapractice\\test\\report.xlsx")
