@@ -118,12 +118,12 @@ Methods:
 
 ## `basic_processors/clip_processor.py`
 
-`ClipProcessor` is a subclass of `BaseProcessor`. The `ClipProcessor` clips the given signal to an approxiamately same time range.
+`ClipProcessor` is a subclass of `BaseProcessor`. The `ClipProcessor` clips the given signal to an approximately same time range.
 
 Arguments:
 * start_time: the start time of the time axis of the clipped signal, `float`.
 * end_time: the end time of the time axis of the clipped signal, `float`. Default None.
-* end_time_tag: the tag in `label` to find the end time of the time axis of the clipped signal, `str`. Default None. If both `end_time_tag` and `end_time` are specified, `end_time` will be ignored.
+* end_time_label: the tag in `label` to find the end time of the time axis of the clipped signal, `str`. Default None. If both `end_time_tag` and `end_time` are specified, `end_time` will be ignored.
 
 Methods:
 

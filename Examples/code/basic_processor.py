@@ -43,6 +43,7 @@ class SliceProcessor(BaseProcessor):
         new_signal.data = np.array(window)
         new_start_time = down_time - len(window) / new_signal.attributes['SampleRate']
         new_signal.attributes['StartTime'] = round(new_start_time, 3)
+        new_signal.attributes['OriginalSampleRate'] = raw_sample_rate
         return new_signal
 
 
@@ -57,11 +58,11 @@ class FFTProcessor(BaseProcessor):
         self.signal_rate = None
         self.fre_signal = None
 
-    def transform(self, signal1: Signal, signal_rate: Signal):
+    def transform(self, signal: Signal):
 
-        self.amp_signal = deepcopy(signal1)
-        self.signal_rate = deepcopy(signal_rate)
-        self.fre_signal = deepcopy(signal1)
+        self.amp_signal = deepcopy(signal)
+        self.signal_rate = signal.attributes['OriginalSampleRate']
+        self.fre_signal = deepcopy(signal)
         self.fft()
         self.amp_max()
 

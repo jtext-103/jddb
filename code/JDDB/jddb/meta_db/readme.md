@@ -47,7 +47,7 @@
     ```
 - ### **db.get_labels(shot_no)**  
   **Description:** 
-    Get all meta of the shot inputed  
+    Get all meta of the input shot.   
   **Parameters:**  
     shot_no : int or string. The shot number whose meta you want to get.  
   **Return:**  
@@ -74,13 +74,13 @@
     ```
 
 - ### **db.query(shot_list=None, filter=None)**
-  **Description:**   
-    Query the shots that meet the set conditions within the set shot number range.  
+  **Description:**  
+    Query the shots that meet the filter conditions within the given shot number range.  
   **Parameters:**  
-    shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.  
+    shot_list : List. The queried range of shot numbers. If shot_list=None, query all shots in the MetaDB.  
     filter : Dictionary. The filter condition for the query. The description format of the condition must comply with Mongodb's specifications, and specific details can be found on the official website of Mongodb. If filter=None, Return all shot number in MetaDB.  
   **Return:**  
-    List. Shot number that meets the filter condition.  
+    List. Shot numbers that meet the filter condition.  
   **Example :**
     ```python
     my_query = {'IsDisrupt': True, 'IpFlat':{'$gt':50}}
@@ -93,7 +93,7 @@
 
 - ### **db.query_valid(shot_list=None, label_true=None, label_false=None)**
   **Description:**  
-    For labels whose information stored in the database is True or False, return shot number that meets the filter condition.  
+    For labels whose information stored in the database is True or False, return shot numbers that meet the filter condition.  
   **Parameters:**  
     shot_list : List. The range of shot numbers queried. If shot_list=None, query all shots in the MetaDB.  
     label_true : List of label names. Filter condition. The returned shots must satisfy that all labels in the label_true are True.  
@@ -111,8 +111,8 @@
     ```
 
 - ### **db.query_range(label_list, lower_limit=None, upper_limit=None, shot_list=None)**  
-  **Description:**   
-    For labels with numeric values stored in the database, return shot number that meets the filter condition.   
+  **Description:**  
+    For labels with numeric values stored in the database, return shot numbers that meet the filter condition.  
   **Parameters:**  
     label_list : A list of labels that store information as numeric values.   
     lower_limit : List of lower limit values. ">=". If there is only an upper limit and no lower limit in the filter condition, the lower limit value in the corresponding position in the lower limit list is set to None.   
@@ -136,8 +136,8 @@
   **Parameters:**  
     shot_list : List. The queried range of shot numbers.  
     label_list : List. The queried label names.  
-    need_nd : Bool. The default value is False, and only the list of shots available for all diagnostics is returned; When need_nd=True, the list of shots available for all diagnostics, as well as a list of non-disruption shots and a list of disruption shots are returned.  
-    show : Bool. The default is True, which displays the number of shots available for each given diagnostic in the given shot number list, the number of shots available for all given diagnostic signals, and the number of non-disruption and disruption shots. If show=False, don't displayed.    
+    need_nd : Bool. Whether to divide the returned shots into disruption shots and non-disruption shots, and return the disruption shots and non-disruption shots. The default is False, and only the list of shots available for all diagnostics is returned; When need_nd=True, the list of shots available for all diagnostics, as well as a list of non-disruption shots and a list of disruption shots are returned.  
+    show : Bool. Whether to display statistical results. The default is True, which displays the number of shots available for each given diagnostic in the given shot number list, the number of shots available for all given diagnostic signals, and the number of non-disruption and disruption shots. If show=False, don't displayed.    
   **Return:**  
     When need_nd=False, only return one list, which is the list of shots available for all given diagnostic signals.  
     When need_nd=True, return three lists, which are the list of shots available for all given diagnostic signals, list of non-disruption shots, and list of disruption shots.  
