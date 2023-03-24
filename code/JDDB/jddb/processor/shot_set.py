@@ -33,7 +33,7 @@ class ShotSet(object):
         """list (int): shot list within the shot set. Readonly."""
         return self._shot_list
 
-    def get_shot(self, shot_no: int):
+    def get_shot(self, shot_no: int) -> Shot:
         """Get an instance of Shot of given shot_no.
 
         Args:

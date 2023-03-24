@@ -69,6 +69,7 @@ if __name__ == '__main__':
         is_disrupt.append(dis_label['IsDisrupt'])
 
     # train test split on shot not sample according to whether shots are disruption
+    # set test_size=0.5 to get 50% shots as test set
     # %%
     train_shots, test_shots, _, _ = \
         train_test_split(test_shot_list, is_disrupt, test_size=0.5, random_state=1, shuffle=True, stratify=is_disrupt)

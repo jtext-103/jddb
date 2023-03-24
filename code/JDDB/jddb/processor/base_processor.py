@@ -4,7 +4,7 @@ from typing import Tuple, Union
 
 
 class BaseProcessor(metaclass=ABCMeta):
-    """Process signals.
+    """Process signal(s).
 
     Process signals according to the ``transform()`` method.
 
@@ -16,7 +16,7 @@ class BaseProcessor(metaclass=ABCMeta):
 
     @abstractmethod
     def transform(self, *signal: Signal) -> Union[Signal, Tuple[Signal, ...]]:
-        """Process signal.
+        """Process signal(s).
 
         This is used for subclassed processors.
         To use it, override the method.
@@ -25,6 +25,6 @@ class BaseProcessor(metaclass=ABCMeta):
             signal: signal(s) to be processed.
 
         Returns:
-            Signal: new signal processed.
+            Signal: new signal(s) processed.
         """
         raise NotImplementedError()
