@@ -32,7 +32,6 @@ class Report:
 
         df_report = pd.DataFrame(columns=self.__header)
         self.report = df_report
-        self.save()
 
     def read(self):
         """
@@ -81,9 +80,9 @@ class Report:
         Args:
             model_name: a list of model
         """
-        model_name = self.check_unexisted(model_name)
-        for i in range(len(model_name)):
-            self.report = self.report.drop(self.report[self.report.model_name == model_name[i]].index)
+        if model_name in self.report['model_name'].values:
+            for i in range(len(model_name)):
+                self.report = self.report.drop(self.report[self.report.model_name == model_name[i]].index)
 
     def check_repeat(self, model_name: str):
         """
@@ -93,21 +92,6 @@ class Report:
         """
         if model_name in self.report.model_name.tolist():
             raise ValueError("data of model_name:{} has already existed".format(model_name))
-
-    def check_unexisted(self, model_name: List[str]):
-        """
-            check whehter shot_no repeated
-            if repeated, raise error
-        Args:
-            model_name: a list
-        """
-
-        err_list = []
-        for i in range(len(model_name)):
-            if model_name[i] not in self.report.model_name.tolist():
-                err_list.append(model_name[i])
-            if len(err_list) > 0:
-                raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
 
     def roc(self, roc_file_path):
         """

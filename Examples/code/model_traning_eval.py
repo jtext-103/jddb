@@ -25,18 +25,14 @@ def matrix_build(shot_list, file_repo, tags):
     Returns: matrix of x and y
 
     """
-    x_set = []
-    y_set = []
+    x_set = np.empty([0, len(tags)-1])
+    y_set = np.empty([0])
     for shot in shot_list:
         x_data = file_repo.read_data(shot, tags)
-        # popKeys = ['\\vl','\\sxr_c_mean','\\fft_fre','\\fft_amp','\\alram_tag']
-        # [x_data.pop(k) for k in popKeys]
         res = np.array(list(x_data.values())).T
-        x_set.append(np.delete(res, 3, 1))
-        y_set.append(res[:, 3])
-    x_array = np.array(x_set)
-    y_array = np.array(y_set)
-    return x_array, y_array
+        x_set = np.append(x_set, np.delete(res, 3, 1), axis=0)
+        y_set = np.append(y_set, res[:, 3], axis=0)
+    return x_set, y_set
 
 
 def get_shot_result(y_red, threshold_sample):
@@ -73,9 +69,10 @@ if __name__ == '__main__':
         is_disrupt.append(dis_label['IsDisrupt'])
 
     # train test split on shot not sample according to whether shots are disruption
+    # set test_size=0.5 to get 50% shots as test set
     # %%
     train_shots, test_shots, _, _ = \
-        train_test_split(test_shot_list, is_disrupt, test_size=0.2, random_state=1, shuffle=True, stratify=is_disrupt)
+        train_test_split(test_shot_list, is_disrupt, test_size=0.5, random_state=1, shuffle=True, stratify=is_disrupt)
 
     # # create x and y matrix for ML models
     # # %%
@@ -119,7 +116,7 @@ if __name__ == '__main__':
     # save sample result to a dict, so when predicting shot with differnet trgging logic,
     # you don't have to re-infor the testshot
     # 改一下注释
-    test_result = Result(r'..\test\test_result.csv')
+    test_result = Result(r'..\test\test_result.xlsx')
     sample_result = dict()
     shot_nos=test_shots  # shot list
     shots_pred_disrurption=[]  # shot predict result
