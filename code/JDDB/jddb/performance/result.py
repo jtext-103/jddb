@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
 from ..meta_db import MetaDB
+from ..file_repo import FileRepo
 
 
 class Result:
@@ -127,8 +128,7 @@ class Result:
     def add(self, shot_no: List[int], predicted_disruption: List[int], predicted_disruption_time: List[float]):
         """
             check lenth
-            check repeated shoot,call check_repeated()
-            use returned shot_no to add
+            check repeated shot, if duplicated overwrite
         Args:
             shot_no: a list of shot number
             predicted_disruption:   a list of value 0 or 1, is disruptive
@@ -137,35 +137,61 @@ class Result:
         if not (len(shot_no) == len(predicted_disruption) == len(predicted_disruption_time)):
             raise ValueError('The inputs do not share the same length.')
 
-        self.check_repeated(shot_no)
         for i in range(len(shot_no)):
-            row_index = len(self.result)  # 当前excel内容有几行
+            shot = shot_no[i]
             if predicted_disruption[i] == 0:
                 predicted_disruption_time[i] = -1
-            self.result.loc[row_index, [self.SHOT_NO_H, self.PREDICTED_DISRUPTION_H, self.PREDICTED_DISRUPTION_TIME_H]] = \
-                [shot_no[i], predicted_disruption[i], predicted_disruption_time[i]]
+            # check if key already exists in the dataframe
+            if shot_no[i] in self.result[self.SHOT_NO_H].values:
+                # update the row with matching key
+                self.result.loc[self.result[self.SHOT_NO_H] == shot, [self.SHOT_NO_H, self.PREDICTED_DISRUPTION_H,
+                                                                      self.PREDICTED_DISRUPTION_TIME_H]] = \
+                    [shot_no[i], predicted_disruption[i], predicted_disruption_time[i]]
+            else:
+                # insert new row
+                new_row = {self.SHOT_NO_H: int(shot_no[i]), self.PREDICTED_DISRUPTION_H: predicted_disruption[i],
+                           self.PREDICTED_DISRUPTION_TIME_H: predicted_disruption_time[i]}
+                self.result = self.result.append(new_row, ignore_index=True)
 
-    def get_all_truth(self, shot_no):
+    def get_all_truth_from_metadb(self, meta_db: MetaDB):
         """
-                check input shot_no whether exist
-                add true data
-        Args:
-            shot_no: a list of shot number
-            predicted_disruption:   a list of value 0 or 1, 1 is disruptive
-            predicted_disruption_time: a list of predicted_disruption_time, unit :s
+            get all true_disruption and true_downtime of exsit shot number from meta_db, if duplicated overwrite
+        """
+
+        shots = self.get_all_shots()
+        for shot in shots:
+            true_disruption = meta_db.get_labels(shot)[self.ACTUAL_DISRUPTION_H]
+
+            if true_disruption == False:
+                true_disruption = 0
+                true_downtime = -1
+            else:
+                true_disruption = 1
+                true_downtime = meta_db.get_labels(shot)[self.ACTUAL_DISRUPTION_TIME_H]
+            self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_H] = true_disruption
+            self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_TIME_H] = true_downtime
+
+    def get_all_from_file_repo(self, file_repo: FileRepo):
+        """
+            get all true_disruption and true_downtime of exsit shot number from file_repo, if duplicated overwrite
+        """
 
         Returns:
 
         """
+        shots = file_repo.get_all_shots()
+        for shot in shots:
+            true_disruption = file_repo.read_labels(shot)[self.ACTUAL_DISRUPTION_H]
 
-        shot_no = self.check_unexisted(shot_no)
+            if true_disruption == False:
+                true_disruption = 0
+                true_downtime = -1
+            else:
+                true_disruption = 1
+                true_downtime = file_repo.read_labels(shot)[self.ACTUAL_DISRUPTION_TIME_H]
+            self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_H] = true_disruption
+            self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_TIME_H] = true_downtime
 
-        for i in range(len(shot_no)):
-            if self.result.loc[self.result.shots == shot_no[i], 'true_disruption'].tolist()[0] == 0:
-                true_disruption_time[i] = -1
-            self.result.loc[
-                self.result[self.result.shots == shot_no[i]].index[0], ['true_disruption', 'true_disruption_time']] = \
-                [true_disruption[i], true_disruption_time[i]]
 
     def remove(self, shot_no: List[int]):
         """
@@ -181,28 +207,6 @@ class Result:
         for i in range(len(shot_no)):
             self.result = self.result.drop(self.result[self.result.shots == shot_no[i]].index)
 
-    def get_all_truth(self, shot_no: Optional[List[int]], true_disruption: List[bool],
-                      true_disruption_time: List[float]):
-        """
-                check input shot_no whether exist
-                add true data
-        Args:
-            shot_no: a list of shot number
-            predicted_disruption:   a list of value 0 or 1, 1 is disruptive
-            predicted_disruption_time: a list of predicted_disruption_time, unit :s
-
-        Returns:
-
-        """
-
-        shot_no = self.check_unexisted(shot_no)
-
-        for i in range(len(shot_no)):
-            if self.result.loc[self.result.shots == shot_no[i], 'true_disruption'].tolist()[0] == 0:
-                true_disruption_time[i] = -1
-            self.result.loc[
-                self.result[self.result.shots == shot_no[i]].index[0], ['true_disruption', 'true_disruption_time']] = \
-                [true_disruption[i], true_disruption_time[i]]
 
     def get_y(self):
         """
@@ -490,32 +494,4 @@ class Result:
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
 
-if __name__ == '__main__':
-    result = Result("G:\\datapractice\\test\\test.xlsx")
 
-#     shot_list = [100561, 100562, 100563]
-#     true_disruption = [1, 0, 1]
-#     true_disruption_time = [0.13, 0.56, 0.41]
-#     result.add(shot_list, true_disruption, true_disruption_time)
-#     result.calc_metrics()
-#     result.remove([100563])
-
-
-message = {
-    "host": "localhost",
-    "port": 27017,
-    "username": "DDBUser",
-    "password": "tokamak!",
-    "database": "DDB"
-}
-
-"""
-查看在给定炮区间中，各给定诊断的可用炮数量。看条件增删诊断，返回诊断都完整的炮号complete_shot
-"""
-c = ConnectDB()
-labels = c.connect(message, "tags")
-db = MetaDB(labels)
-re = db.get_labels(1052637)
-print(re)
-
-c.disconnect()
