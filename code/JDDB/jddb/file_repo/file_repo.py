@@ -7,6 +7,11 @@ from ..meta_db.meta_db import MetaDB
 
 
 class FileRepo:
+    """
+    FileRepo is used to process HDF5 files.
+    base path contains template same as BM design. i.e. "\\data\\jtext\\$shot_2$XX\\$shot_1$XX\\"
+
+    """
     def __init__(self, base_path: str):
         self._base_path = base_path
         self._data_group_name = 'data'
