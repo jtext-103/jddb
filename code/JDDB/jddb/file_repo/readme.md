@@ -228,9 +228,7 @@ The base folder should use $shot_x$ for template.
   Example:
   ```python
   file_path = "\\data\\jtext\\10500XX\\105000X\\1050000.hdf5"
-  data_dict = dict()
-  data_dict['\\ip'] = np.random.randn(1000)
-  data_dict['\\bt'] = np.random.randn(1000)
+  data_dict = {['\\ip']: np.random.randn(1000), ['\\bt']: np.random.randn(1000)}
   file_repo.write_data_file(file_path, data_dict)
   ```
 - **`write_data(shot_no, data_dict, overwrite=False)`**
@@ -242,9 +240,7 @@ The base folder should use $shot_x$ for template.
   Example:
   ```python
   shot_no = 1050000
-  data_dict = dict()
-  data_dict['\\ip'] = np.random.randn(1000)
-  data_dict['\\bt'] = np.random.randn(1000)
+  data_dict = {['\\ip']: np.random.randn(1000), ['\\bt']: np.random.randn(1000)}
   file_repo.write_data(shot_no, data_dict)
   ```  
 
@@ -258,9 +254,7 @@ The base folder should use $shot_x$ for template.
   ```python
   shot_no = 1050000
   tag = '\\ip'
-  attribute_dict = dict()
-  attribute_dict['SampleRate'] = 1000
-  attribute_dict['StartTime'] = 0.1
+  attribute_dict = {['SampleRate']: 1000, ['StartTime']: 0.1}
   file_repo.write_attribute(shot_no, tag, attribute_dict)
   ```
   
@@ -273,9 +267,7 @@ The base folder should use $shot_x$ for template.
   Example:
   ```python
   file_path = "\\data\\jtext\\10500XX\\105000X\\1050000.hdf5"
-  label_dict = dict()
-  label_dict['DownTime'] = 0.6
-  label_dict['IsDisrupt'] = 1
+  label_dict = {['DownTime']: 0.6, ['IsDisrupt']: 1} 
   file_repo.write_label_file(file_path, label_dict)
   ```
   
@@ -288,9 +280,7 @@ The base folder should use $shot_x$ for template.
   Example:
   ```python
   shot_no = 1050000
-  label_dict = dict()
-  label_dict['DownTime'] = 0.6
-  label_dict['IsDisrupt'] = 1
+  label_dict = {['DownTime']: 0.6, ['IsDisrupt']: 1} 
   file_repo.write_label_file(shot_no, label_dict)
   ```
 ### Sync Meta
