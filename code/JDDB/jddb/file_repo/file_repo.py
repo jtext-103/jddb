@@ -112,7 +112,7 @@ class FileRepo:
             create_empty: True -> create shot file if it does not exist before
 
         Returns: file_path_dict
-                 --> dict{"shot_no": file_path}
+                 --> dict{"shot_list": file_path}
 
         """
         file_path_dict = dict()

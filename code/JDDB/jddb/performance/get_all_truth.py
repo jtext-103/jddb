@@ -3,7 +3,7 @@
 class Result:
     TRUE_DISRUPTION_LABEL = "isDisurption"
     TRUE_DOWNTTIME_LABEL = "DownTime"
-    SHOT_NO_HEADER = "shot_no"
+    SHOT_NO_HEADER = "shot_list"
     TRUE_DISRUPTION_HEADER = "true_disruption"
     TRUE_DISRUPTION_TIME_HEADER = "true_disruption_time"
 
@@ -20,7 +20,7 @@ class Result:
         """
             check lenth
             check repeated shoot,call check_repeated()
-            use returned shot_no to add
+            use returned shot_list to add
         Args:
             shot_no: a list of shot number
             predicted_disruption:   a list of value 0 or 1, is disruptive
