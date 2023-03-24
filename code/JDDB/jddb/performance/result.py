@@ -1,24 +1,27 @@
 import math
-import pandas as pd
 import os
-from typing import Optional, List
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+from typing import List
+from typing import Optional
+import matplotlib
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
-import matplotlib
-import os
-import h5py
-import warnings
-from typing import List
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
 from ..meta_db import MetaDB
 
 
-
-
-from ..file_repo import FileRepo
-
 class Result:
+    SHOT_NO = 'shot_no'
+    PREDICTED_DISRUPTION = 'predicted_disruption'
+    PREDICTED_DISRUPTION_TIME = 'predicted_disruption_time'
+    ACTUAL_DISRUPTION = 'actual_disruption'
+    ACTUAL_DISRUPTION_TIME = 'actual_disruption_time'
+    WARNING_TIME = 'warning_time'
+    TRUE_POSITIVE = 'true_positive'
+    FALSE_POSITIVE = 'false_positive'
+    TARDY_ALARM_THRESHOLD = 'tardy_alarm_threshold'
+    LUCKY_GUESS_THRESHOLD = 'lucky_guess_threshold'
 
     def __init__(self, csv_path: str):
         """
@@ -33,13 +36,13 @@ class Result:
         self.tardy_alarm_threshold = np.nan
         self.lucky_guess_threshold = np.nan
         self.csv_path = csv_path
-        self.__header = ['shot_no', 'predicted_disruption', 'predicted_disruption_time', 'true_disruption',
-                         'true_disruption_time', 'warning_time', 'true_positive', 'false_positive',
-                         'tardy_alarm_threshold', 'lucky_guess_threshold']
+        self.__header = [self.SHOT_NO, self.PREDICTED_DISRUPTION, self.PREDICTED_DISRUPTION_TIME, self.ACTUAL_DISRUPTION,
+                         self.ACTUAL_DISRUPTION_TIME, self.WARNING_TIME, self.TRUE_POSITIVE, self.FALSE_POSITIVE,
+                         self.TARDY_ALARM_THRESHOLD, self.LUCKY_GUESS_THRESHOLD]
         self.result = None
         self.y_pred = []
         self.y_true = []
-        self.shot_no = []
+        self.shots = []
         self.ignore_thresholds = False
         if os.path.exists(csv_path):
             self.read()
@@ -50,12 +53,12 @@ class Result:
         """
             add header
             set property: self.tardy_alarm_threshold,
-                        self.lucky_guess_threshold
+                          self.lucky_guess_threshold
         """
 
         df_result = pd.DataFrame(columns=self.__header)
-        df_result.loc[0, ['tardy_alarm_threshold', 'lucky_guess_threshold']] = [self.tardy_alarm_threshold,
-                                                                                self.lucky_guess_threshold]
+        df_result.loc[0, [self.TARDY_ALARM_THRESHOLD, self.LUCKY_GUESS_THRESHOLD]] = [self.tardy_alarm_threshold,
+                                                                                      self.lucky_guess_threshold]
         self.result = df_result
 
     def read(self):
@@ -72,38 +75,38 @@ class Result:
         elif len(set(self.result.columns) & set(self.__header)) != len(self.result.columns):
             raise ValueError("The file from csv_path:{} contains unknown information ".format(self.csv_path))
 
-        self.tardy_alarm_threshold = self.result.loc[0, 'tardy_alarm_threshold']
-        self.lucky_guess_threshold = self.result.loc[0, 'lucky_guess_threshold']
+        self.tardy_alarm_threshold = self.result.loc[0, self.TARDY_ALARM_THRESHOLD]
+        self.lucky_guess_threshold = self.result.loc[0, self.LUCKY_GUESS_THRESHOLD]
 
     def save(self):
         """
             after all result.save(),  the file will be saved in disk, else not
         """
-        self.result.loc[0, ['lucky_guess_threshold']] = self.lucky_guess_threshold
-        self.result.loc[0, ['tardy_alarm_threshold']] = self.tardy_alarm_threshold
+        self.result.loc[0, [self.TARDY_ALARM_THRESHOLD]] = self.lucky_guess_threshold
+        self.result.loc[0, [self.LUCKY_GUESS_THRESHOLD]] = self.tardy_alarm_threshold
         self.result.to_excel(self.csv_path, index=False)
 
     def get_all_shots(self, include_no_truth=True):
         """
-            get all shot_no
-            if include_no_truth=True ,return shot_no without no_true
-            return shot_no
+            get all shot_list
+            if include_no_truth=True ,return shot_list without no_true
+            return shot_list
         Args:
-            include_no_truth: if True, the shot_no will not include those without true disruptive information
-        Returns: shot_no: a list of shot number
+            include_no_truth: if True, the shot_list will not include those without true disruptive information
+        Returns: shot_list: a list of shot number
 
         """
 
-        shot_no = self.result.shot_no.tolist()
+        shot_list = self.result.shots.tolist()
         if include_no_truth is False:
             get_shots = []
-            for i in range(len(shot_no)):
+            for i in range(len(shot_list)):
                 true_disruption_time = \
-                    self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption_time'].tolist()[0]
+                    self.result.loc[self.result.shots == shot_list[i], self.ACTUAL_DISRUPTION_TIME].tolist()[0]
                 if true_disruption_time is not None:
-                    get_shots.append(shot_no[i])
-            shot_no = get_shots
-        return shot_no
+                    get_shots.append(shot_list[i])
+            shot_list = get_shots
+        return shot_list
 
     def check_unexisted(self, shot_no: Optional[List[int]] = None):
 
@@ -114,7 +117,7 @@ class Result:
         """
         err_list = []
         for i in range(len(shot_no)):
-            if shot_no[i] not in self.result.shot_no.tolist():
+            if shot_no[i] not in self.result.shots.tolist():
                 err_list.append(shot_no[i])
             if len(err_list) > 0:
                 raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
@@ -132,12 +135,12 @@ class Result:
 
         err_list = []
         for i in range(len(shot_no)):
-            if shot_no[i] in self.result.shot_no.tolist():
+            if shot_no[i] in self.result.shots.tolist():
                 err_list.append(shot_no[i])
         if len(err_list) > 0:
             raise ValueError("data of shot_no:{} has already existed".format(err_list))
 
-    def add(self, shot_no: List[int], predicted_disruption: List[int], predicted_disruption_time: List[float] ):
+    def add(self, shot_no: List[int], predicted_disruption: List[int], predicted_disruption_time: List[float]):
         """
             check lenth
             check repeated shoot,call check_repeated()
@@ -155,7 +158,7 @@ class Result:
             row_index = len(self.result)  # 当前excel内容有几行
             if predicted_disruption[i] == 0:
                 predicted_disruption_time[i] = -1
-            self.result.loc[row_index, ['shot_no', 'predicted_disruption', 'predicted_disruption_time']] = \
+            self.result.loc[row_index, [self.SHOT_NO, self.PREDICTED_DISRUPTION, self.PREDICTED_DISRUPTION_TIME]] = \
                 [shot_no[i], predicted_disruption[i], predicted_disruption_time[i]]
 
     def get_all_truth(self, shot_no):
@@ -171,18 +174,16 @@ class Result:
 
         """
 
-
         shot_no = self.check_unexisted(shot_no)
 
-
         for i in range(len(shot_no)):
-            if self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0] == 0:
+            if self.result.loc[self.result.shots == shot_no[i], 'true_disruption'].tolist()[0] == 0:
                 true_disruption_time[i] = -1
             self.result.loc[
-                self.result[self.result.shot_no == shot_no[i]].index[0], ['true_disruption', 'true_disruption_time']] = \
+                self.result[self.result.shots == shot_no[i]].index[0], ['true_disruption', 'true_disruption_time']] = \
                 [true_disruption[i], true_disruption_time[i]]
 
-    def remove(self,  shot_no: List[int]):
+    def remove(self, shot_no: List[int]):
         """
 
                 giving model_name to remove the specified row
@@ -194,7 +195,7 @@ class Result:
 
         shot_no = self.check_unexisted(shot_no)
         for i in range(len(shot_no)):
-            self.result = self.result.drop(self.result[self.result.shot_no == shot_no[i]].index)
+            self.result = self.result.drop(self.result[self.result.shots == shot_no[i]].index)
 
     def get_all_truth(self, shot_no: Optional[List[int]], true_disruption: List[bool],
                       true_disruption_time: List[float]):
@@ -213,10 +214,10 @@ class Result:
         shot_no = self.check_unexisted(shot_no)
 
         for i in range(len(shot_no)):
-            if self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0] == 0:
+            if self.result.loc[self.result.shots == shot_no[i], 'true_disruption'].tolist()[0] == 0:
                 true_disruption_time[i] = -1
             self.result.loc[
-                self.result[self.result.shot_no == shot_no[i]].index[0], ['true_disruption', 'true_disruption_time']] = \
+                self.result[self.result.shots == shot_no[i]].index[0], ['true_disruption', 'true_disruption_time']] = \
                 [true_disruption[i], true_disruption_time[i]]
 
     def get_y(self):
@@ -232,7 +233,7 @@ class Result:
             raise ValueError(
                 "tardy_alarm_threshold is :{} , lucky_guess_threshold is :{}, fulfill ".format(
                     self.tardy_alarm_threshold, self.lucky_guess_threshold))
-        self.shot_no = self.get_all_shots(include_no_truth=False)
+        self.shots = self.get_all_shots(include_no_truth=False)
         self.get_warning_time()
 
         self.get_y_pred()
@@ -246,21 +247,20 @@ class Result:
                 There is a special case while true_disruption_time == -1 and predicted_disruption == 1,
             warning_time = predicted_disruption_time
         """
-        shot_no = self.shot_no
+        shot_no = self.shots
         for i in range(len(shot_no)):
             predicted_disruption_time = \
-                self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption_time'].tolist()[0]
+                self.result.loc[self.result.shots == shot_no[i], self.PREDICTED_DISRUPTION_TIME].tolist()[0]
             true_disruption_time = \
-                self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption_time'].tolist()[0]
+                self.result.loc[self.result.shots == shot_no[i], self.ACTUAL_DISRUPTION_TIME].tolist()[0]
             predicted_disruption = \
-                self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption'].tolist()[0]
+                self.result.loc[self.result.shots == shot_no[i], self.PREDICTED_DISRUPTION].tolist()[0]
             if true_disruption_time == -1 and predicted_disruption == 1:
-                self.result.loc[self.result.shot_no == shot_no[
-                    i], 'warning_time'] = predicted_disruption_time
+                self.result.loc[self.result.shots == shot_no[
+                    i], self.WARNING_TIME] = predicted_disruption_time
             else:
-                self.result.loc[self.result.shot_no == shot_no[
-                    i], 'warning_time'] = true_disruption_time - predicted_disruption_time
-
+                self.result.loc[self.result.shots == shot_no[
+                    i], self.WARNING_TIME] = true_disruption_time - predicted_disruption_time
 
     def get_y_pred(self):
         """
@@ -275,11 +275,11 @@ class Result:
                     set y_pred = 0 and warning_time = -1 while predicted_disruption == 0
         """
         y_pred = []
-        shot_no = self.shot_no
+        shot_no = self.shots
 
         for i in range(len(shot_no)):
-            warning_time = self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0]
-            predicted_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'predicted_disruption'].tolist()[
+            warning_time = self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME].tolist()[0]
+            predicted_disruption = self.result.loc[self.result.shots == shot_no[i], self.PREDICTED_DISRUPTION].tolist()[
                 0]
             # true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
             if predicted_disruption == 1:
@@ -290,10 +290,10 @@ class Result:
                         y_pred.append(1)
                     else:
                         y_pred.append(0)
-                        self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
+                        self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME] = -1
             else:
                 y_pred.append(0)
-                self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'] = -1
+                self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME] = -1
         self.y_pred = y_pred
 
     def get_y_true(self):
@@ -306,11 +306,11 @@ class Result:
         """
 
         y_true = []
-        shot_no = self.shot_no
+        shot_no = self.shots
         y_true = []
         for i in range(len(shot_no)):
             y_true.append(
-                self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0])
+                self.result.loc[self.result.shots == shot_no[i], self.ACTUAL_DISRUPTION].tolist()[0])
         self.y_true = y_true
 
     def calc_metrics(self):
@@ -323,22 +323,22 @@ class Result:
         """
 
         self.get_y()
-        shot_no = self.shot_no
+        shot_no = self.shots
         y_pred = self.y_pred
 
         for i in range(len(shot_no)):
-            true_disruption = self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0]
+            true_disruption = self.result.loc[self.result.shots == shot_no[i], self.ACTUAL_DISRUPTION].tolist()[0]
             if true_disruption == 1 and y_pred[i] == 1:
-                self.result.loc[self.result.shot_no == shot_no[i], 'true_positive'] = 1
-                self.result.loc[self.result.shot_no == shot_no[i], 'false_positive'] = 0
+                self.result.loc[self.result.shots == shot_no[i], self.TRUE_POSITIVE] = 1
+                self.result.loc[self.result.shots == shot_no[i], self.FALSE_POSITIVE] = 0
 
             elif true_disruption == 0 and y_pred[i] == 1:
-                self.result.loc[self.result.shot_no == shot_no[i], 'true_positive'] = 0
-                self.result.loc[self.result.shot_no == shot_no[i], 'false_positive'] = 1
+                self.result.loc[self.result.shots == shot_no[i], self.TRUE_POSITIVE] = 0
+                self.result.loc[self.result.shots == shot_no[i], self.FALSE_POSITIVE] = 1
 
             elif true_disruption == 0 and y_pred[i] == 0:
-                self.result.loc[self.result.shot_no == shot_no[i], 'true_positive'] = 0
-                self.result.loc[self.result.shot_no == shot_no[i], 'false_positive'] = 0
+                self.result.loc[self.result.shots == shot_no[i], self.TRUE_POSITIVE] = 0
+                self.result.loc[self.result.shots == shot_no[i], self.FALSE_POSITIVE] = 0
 
     def confusion_matrix(self):
         """
@@ -351,8 +351,7 @@ class Result:
 
         """
 
-
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
+        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
         [[tn, fp], [fn, tp]] = confusion_matrix(self.y_true, self.y_pred)
         return tp, fn, fp, tn
@@ -380,7 +379,7 @@ class Result:
             accuracy
 
         """
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
+        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
         accuracy = accuracy_score(y_true=self.y_true, y_pred=self.y_pred, normalize=True,
                                   sample_weight=None)
@@ -394,7 +393,7 @@ class Result:
 
         """
 
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
+        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
 
         precision = precision_score(y_true=self.y_true, y_pred=self.y_pred, average='macro')
@@ -407,7 +406,7 @@ class Result:
             recall
 
         """
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
+        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
 
         recall = recall_score(y_true=self.y_true, y_pred=self.y_pred, average='macro')
@@ -430,11 +429,11 @@ class Result:
         plt.rcParams['font.weight'] = 'bold'
         warning_time_list = []
         shot_no = self.get_all_shots(include_no_truth=False)
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
+        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
         for i in range(len(shot_no)):
-            if self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0] != -1:
-                warning_time_list.append(self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0])
+            if self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME].tolist()[0] != -1:
+                warning_time_list.append(self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME].tolist()[0])
         warning_time_list = np.array(warning_time_list)  # s#预测时间
 
         time_segments = pd.cut(warning_time_list, time_bins, right=False)
@@ -471,11 +470,11 @@ class Result:
         plt.rcParams['font.weight'] = 'bold'
         warning_time_list = []
         shot_no = self.get_all_shots(include_no_truth=False)
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shot_no)) != len(self.shot_no):
+        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
         for i in range(len(shot_no)):
-            if self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0] != -1:
-                warning_time_list.append(self.result.loc[self.result.shot_no == shot_no[i], 'warning_time'].tolist()[0])
+            if self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME].tolist()[0] != -1:
+                warning_time_list.append(self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME].tolist()[0])
         warning_time = np.array(warning_time_list)  # ms->s#预测时间
         warning_time.sort()  #
         accu_frac = list()
@@ -506,8 +505,9 @@ class Result:
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
+
 if __name__ == '__main__':
-    result = Result("G:\datapractice\\test\\test.xlsx")
+    result = Result("G:\\datapractice\\test\\test.xlsx")
 
 #     shot_list = [100561, 100562, 100563]
 #     true_disruption = [1, 0, 1]
@@ -517,15 +517,13 @@ if __name__ == '__main__':
 #     result.remove([100563])
 
 
-
-
 message = {
-            "host" : "localhost",
-            "port" : 27017,
-            "username" : "DDBUser",
-            "password" : "tokamak!",
-            "database": "DDB"
-          }
+    "host": "localhost",
+    "port": 27017,
+    "username": "DDBUser",
+    "password": "tokamak!",
+    "database": "DDB"
+}
 
 """
 查看在给定炮区间中，各给定诊断的可用炮数量。看条件增删诊断，返回诊断都完整的炮号complete_shot
