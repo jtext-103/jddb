@@ -305,7 +305,7 @@ The base folder should use $shot_x$ for template.
   
   Example:
   ```python
-  from jddb.meta_db import ConnectDB, MetaDB
+  from jddb.meta_db import MetaDB
   shot_list = [1050000, 1050001]
   connection_str = {
     "host": "1.1.1.1",
@@ -315,8 +315,7 @@ The base folder should use $shot_x$ for template.
     "database": "JDDB"
   }
   collection = "label"
-  c = ConnectDB()
-  labels = c.connect(connection_str, collection)
-  meta_db = MetaDB(labels)
+  meta_db = MetaDB(connection_str, collection)
   file_repo.sync_meta(meta_db, shot_list)
+  meta_db.disconnect()
   ```  
