@@ -176,9 +176,6 @@ class Result:
             get all true_disruption and true_downtime of exsit shot number from file_repo, if duplicated overwrite
         """
 
-        Returns:
-
-        """
         shots = file_repo.get_all_shots()
         for shot in shots:
             true_disruption = file_repo.read_labels(shot)[self.ACTUAL_DISRUPTION_H]
