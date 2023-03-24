@@ -21,3 +21,6 @@ env/
 
 # Logs
 *.log
+
+*.hdf5
+

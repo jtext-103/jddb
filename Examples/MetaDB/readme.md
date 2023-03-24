@@ -19,7 +19,7 @@ Install MongoDB (version>?) and then
 use
 
 ```bash
-mongorestore --host=localhost --port 27017 --db MetaDB --collection Labels --dir Labels.bson
+mongorestore --host=localhost --port 27017 --db JDDB --collection Labels --dir Labels.bson
 ```
 
 to restore the dumped data to you mongodb server
