@@ -1,13 +1,19 @@
 # JDDB
 
-What is JDDB in one sentence.
-
 ## Installation
 
-Run `pip install .` from the top-level directory of JDDB package.
+Run `pip install .` from here of JDDB package.
 
 ## Usage
 
-See readme in the modules for uasage.
+See readme in the modules for usage.
 
-See design for overview of JDDB.
+- [MetaDB](./jddb/meta_db/readme.md)
+- [FileRepo](./jddb/file_repo/readme.md)
+- [MdsDumper](./jddb/mds_dumper/readme.md)
+- [performance](./jddb/performance/readme.md)
+- [processing](./jddb/processor/readme.md)
+
+## if you are lost
+
+See design [Overview](./design/Overview.md) of JDDB.
