@@ -8,3 +8,5 @@ It contains tools to work with HDF5 shot files, data processing pipeline, metada
 - Then you can [install](./code/JDDB/readme.md) jddb package
 - Then you can explore the [examples](/Examples/readme.md) to know how to use it.
 - You can dig deeper into the jddb [here](./code/JDDB/readme.md).
+
+Some of the docs may have bad English 🤣.
