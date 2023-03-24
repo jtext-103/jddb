@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 from MDSplus import connection
 from typing import List
-from .file_repo import FileRepo
+from ..file_repo import FileRepo
 import time as delay_time
 
 
@@ -33,6 +33,8 @@ class MDSDumper:
         Returns: None
 
         """
+        sample_rate_attr = 'SampleRate'
+        start_time_attr = 'StartTime'
         i = int(0)
         while True:
             if i > len(shot_list) - 1:
@@ -61,8 +63,8 @@ class MDSDumper:
                 data_dict_temp = dict()
                 data_dict_temp[tag] = data_raw
                 attribute_dict = dict()
-                attribute_dict["SampleRate"] = fs
-                attribute_dict["StartTime"] = st
+                attribute_dict[sample_rate_attr] = fs
+                attribute_dict[start_time_attr] = st
                 file_repo.write_data(shot, data_dict_temp, overwrite)
                 file_repo.write_attributes(shot, tag, attribute_dict, overwrite)
                 del attribute_dict

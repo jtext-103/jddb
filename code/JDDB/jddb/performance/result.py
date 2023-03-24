@@ -138,7 +138,7 @@ class Result:
         if len(err_list) > 0:
             raise ValueError("data of shot_no:{} has already existed".format(err_list))
 
-    def add(self, shot_no: List[int], predicted_disruption: List[bool], predicted_disruption_time: List[float] ):
+    def add(self, shot_no: List[int], predicted_disruption: List[int], predicted_disruption_time: List[float] ):
         """
             check lenth
             check repeated shoot,call check_repeated()
@@ -467,7 +467,6 @@ class Result:
 
         """
         true_dis_num = len(self.get_all_shots(include_no_truth=False))
-        result.warning_time_histogram("G:\datapractice\\test", [-1, 0, 0.06,0.3])
         plt.rcParams['font.family'] = 'Arial'
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
