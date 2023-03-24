@@ -47,17 +47,7 @@ class Result:
         if os.path.exists(csv_path):
             self.read()
         else:
-            self.create_df()
-
-    def create_df(self):
-        """
-            add header
-            set property: self.tardy_alarm_threshold,
-                          self.lucky_guess_threshold
-        """
-
-        df_result = pd.DataFrame(columns=self.__header)
-        self.result = df_result
+            self.result = pd.DataFrame(columns=self.__header)
 
     def read(self):
         """
@@ -72,7 +62,6 @@ class Result:
             self.result = pd.DataFrame(columns=self.__header)
         elif len(set(self.result.columns) & set(self.__header)) != len(self.result.columns):
             raise ValueError("The file from csv_path:{} contains unknown information ".format(self.csv_path))
-
         self.tardy_alarm_threshold = self.result.loc[0, self.TARDY_ALARM_THRESHOLD_H]
         self.lucky_guess_threshold = self.result.loc[0, self.LUCKY_GUESS_THRESHOLD_H]
 
