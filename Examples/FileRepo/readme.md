@@ -14,7 +14,4 @@ The files is stored in Dropbox, here is the url:
 
 https://www.dropbox.com/s/gge7amz1czt4l2d/Example_shot_files.zip?dl=0
 
-**_You should first register an account using your email address._**
-
-After download, create a folder named `TestShots` here for the examples to run.
-Unzip the downloaded file into the `TestShots` folder
+After download, create a folder named `TestShots` here, then unzip the downloaded file into the `TestShots` folder for the examples to run.
