@@ -16,6 +16,7 @@ class Result:
     """
         Assign a str value to the header
     """
+
     IS_DISRUPT = "IsDisrupt"
     DOWN_TIME = "DownTime"
     SHOT_NO_H = 'shot_no'
@@ -95,6 +96,7 @@ class Result:
         """
             after all result.save(),  the file will be saved in disk, else not
         """
+
         self.result.loc[0, [self.TARDY_ALARM_THRESHOLD_H]] = self.lucky_guess_threshold
         self.result.loc[0, [self.LUCKY_GUESS_THRESHOLD_H]] = self.tardy_alarm_threshold
         self.result.to_csv(self.csv_path, index=False)
@@ -123,12 +125,12 @@ class Result:
         return shot_list
 
     def check_unexisted(self, shot_list: Optional[List[int]] = None):
-
         """
             check whehter shot_list existed
             if unexisted, raise error
             if shot_list is None ,call get all shots()
         """
+
         err_list = []
         for i in range(len(shot_list)):
             if shot_list[i] not in self.result[self.SHOT_NO_H].tolist():
@@ -163,6 +165,7 @@ class Result:
             predicted_disruption:   a list of value 0 or 1, is disruptive
             predicted_disruption_time: a list of predicted_disruption_time, unit :s
         """
+
         if not (len(shot_list) == len(predicted_disruption) == len(predicted_disruption_time)):
             raise ValueError('The inputs do not share the same length.')
 
@@ -185,6 +188,8 @@ class Result:
     def get_all_truth_from_metadb(self, meta_db: MetaDB):
         """
             get all true_disruption and true_downtime of exsit shot number from meta_db, if duplicated overwrite
+         Args:
+            Instantiated meta_db
         """
 
         shot_list = self.get_all_shots()
@@ -200,9 +205,11 @@ class Result:
             self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_H] = true_disruption
             self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_TIME_H] = true_downtime
 
-    def get_all_from_file_repo(self, file_repo: FileRepo):
+    def get_all_truth_from_file_repo(self, file_repo: FileRepo):
         """
-            get all true_disruption and true_downtime of exsit shot number from file_repo, if duplicated overwrite
+                get all true_disruption and true_downtime of exsit shot number from file_repo, if duplicated overwrite
+            Args:
+                Instantiated file_repo
         """
 
         shot_list = file_repo.get_all_shots()
@@ -220,12 +227,9 @@ class Result:
 
     def remove(self, shot_list: List[int]):
         """
-
                 giving model_name to remove the specified row
         Args:
             shot_list: a list of shot number
-
-
         """
 
         shot_list = self.check_unexisted(shot_list)
@@ -236,8 +240,8 @@ class Result:
         """
             this function should be called before setting self.tardy_alarm_threshold and self.lucky_guess_threshold,
             compute warning_time, true_positive, false_positive, true_negative, false_negative
-
         """
+
         shot_list = self.get_all_shots(include_all=False)
         for shot in shot_list:
             if self.result.loc[self.result[self.SHOT_NO_H] == shot, self.ACTUAL_DISRUPTION_H].values[0] is not np.nan:
@@ -269,6 +273,7 @@ class Result:
         """
             return a tuple [tp,fp,tn,fn,warning_time]
         """
+
         warning_time = -1
         tp = np.nan
         fp = -1
@@ -311,6 +316,7 @@ class Result:
         """
             compute value of average warning_time
         """
+
         shot_list = self.result[self.SHOT_NO_H].tolist()
         warning_time_list = []
         for shot in shot_list:
@@ -323,6 +329,7 @@ class Result:
         """
             compute value of average warning_time
         """
+
         shot_list = self.result[self.SHOT_NO_H].tolist()
         warning_time_list = []
         for shot in shot_list:
@@ -338,6 +345,7 @@ class Result:
             ture postive, false negative, false postive, ture negative
 
         """
+
         matrix = confusion_matrix(self.y_true, self.y_pred)
 
         return matrix
@@ -458,8 +466,8 @@ class Result:
             if self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0] != -1:
                 warning_time_list.append(
                     self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0])
-        warning_time = np.array(warning_time_list)  # ms->s#预测时间
-        warning_time.sort()  #
+        warning_time = np.array(warning_time_list)  # ms->s
+        warning_time.sort()
         accu_frac = list()
         for i in range(len(warning_time)):
             accu_frac.append((i + 1) / true_dis_num * 100)
