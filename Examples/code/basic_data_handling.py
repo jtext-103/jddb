@@ -5,13 +5,14 @@
 import matplotlib.pyplot as plt
 from jddb.meta_db import MetaDB
 from jddb.file_repo import FileRepo
+from jddb.processor import Shot
 import numpy as np
 
 # %% connect to the MetaDB
 connection_str = {
     "host": "localhost",
     "port": 27017,
-            "database": "JDDB"
+    "database": "JDDB"
 }
 collection = "Labels"
 
@@ -61,8 +62,16 @@ stop = start + len(data) / sr
 time_axis = np.linspace(start, stop, num=len(data), endpoint=True)
 
 # plot
-plt.figure()
-plt.plot(time_axis, data)
+# plt.figure()
+# plt.plot(time_axis, data)
+# plt.show()
+
+# an alternative way to read a shot
+example_shot = Shot(shot, file_repo)
+# get a signal instance from a shot instance
+ip = example_shot.get('\\ip')
+# an alternative way to plot with signal
+plt.plot(ip.time, ip.data)
 plt.show()
 # %%
 # disconnect from MongoDB
