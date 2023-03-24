@@ -15,7 +15,7 @@ from ..file_repo import FileRepo
 class Result:
     IS_DISRUPT = "IsDisrupt"
     DOWN_TIME = "DownTime"
-    SHOT_NO_H = 'shot_list'
+    SHOT_NO_H = 'shot_no'
     PREDICTED_DISRUPTION_H = 'predicted_disruption'
     PREDICTED_DISRUPTION_TIME_H = 'predicted_disruption_time'
     ACTUAL_DISRUPTION_H = 'actual_disruption'
@@ -282,7 +282,7 @@ class Result:
 
     def get_y_true(self):
         """
-            whether self.shot_list = shot_list
+            whether self.shots = shot_list
             get y_true: a list of value 0 or 1, 1 is right
 
         Returns:
@@ -300,7 +300,7 @@ class Result:
     def calc_metrics(self):
         """
             this function should be called before setting self.tardy_alarm_threshold and self.lucky_guess_threshold ,
-            whether self.shot_list = shot_list
+            whether self.shots = shot_list
             get y_pred, shot_list
             compute warning_time, true_positive, false_positive
 
@@ -327,7 +327,7 @@ class Result:
     def confusion_matrix(self):
         """
             this function should be called before call self.calc_metrics() ,
-            whether self.shot_list = shot_list
+            whether self.shots = shot_list
             get y_pred, shot_list
             compute confusion_matrix
         Returns:

@@ -28,7 +28,7 @@ class FileRepo:
         If not exist return empty string
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             ignore_none: True -> even the shot file does exist, still return the file path
 
         Returns: file path
@@ -86,7 +86,7 @@ class FileRepo:
         Create the a shot file
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
 
         Returns: file path
 
@@ -139,7 +139,7 @@ class FileRepo:
         Get all the tag list of the data group in one shot file.
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
 
         Returns: tag list
 
@@ -199,7 +199,7 @@ class FileRepo:
         Read data dict from the data group in one shot file with a shot number as input.
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             tag_list: the tag list need to be read
                       if tag_list = None, read all tags
 
@@ -217,7 +217,7 @@ class FileRepo:
         Read attribute dict of one tag in one shot file.
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             tag: tag
             attribute_list: the attribute list need to be read
                             if attribute_list = None, read all attributes
@@ -288,7 +288,7 @@ class FileRepo:
         Read label dict from the meta group in one shot file with a shot number as input.
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             label_list: the label list need to be read
                         if label_list = None, read all labels
 
@@ -333,7 +333,7 @@ class FileRepo:
         Remove the datasets from the data group in one shot file with a shot number as input.
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             tag_list: the tag list need to be removed
 
         Returns: None
@@ -348,7 +348,7 @@ class FileRepo:
         Remove the attribute of of one tag in one shot file.
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             tag: tag
             attribute_list: the attribute list need to be removed
 
@@ -408,7 +408,7 @@ class FileRepo:
         Remove labels from the meta group in one shot file with a shot number as input.
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             label_list: the label list need to be removed
 
         Returns: None
@@ -457,7 +457,7 @@ class FileRepo:
         Write a data dictionary in the data group in one shot file with a shot number as input.
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             data_dict: data_dict
                        --> data_dict{"tag": data}
             overwrite: True -> remove the existed tag, then write the new one
@@ -477,7 +477,7 @@ class FileRepo:
 
         Write attributes of one tag in one shot
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             tag: tag
             attribute_dict: attribute_dict
                             --> attribute_dict{"attribute": data}
@@ -549,7 +549,7 @@ class FileRepo:
         Write a label dictionary in the meta group in one shot file with a shot number as input.
 
         Args:
-            shot_no: shot_list
+            shot_no: shot_no
             label_dict: label_dict
                         --> label_dict{"label": data}
             overwrite: True -> remove the existed label, then write the new one

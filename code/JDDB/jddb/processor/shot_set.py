@@ -34,7 +34,7 @@ class ShotSet(object):
         return self._shot_list
 
     def get_shot(self, shot_no: int) -> Shot:
-        """Get an instance of Shot of given shot_list.
+        """Get an instance of Shot of given shot_no.
 
         Args:
             shot_no (int): the shot to be got.
