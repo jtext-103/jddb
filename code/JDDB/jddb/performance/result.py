@@ -86,23 +86,20 @@ class Result:
         self.result.loc[0, [self.LUCKY_GUESS_THRESHOLD]] = self.tardy_alarm_threshold
         self.result.to_excel(self.csv_path, index=False)
 
-    def get_all_shots(self, include_no_truth=True):
+    def get_all_shots(self, include_all=True):
         """
             get all shot_list
-            if include_no_truth=True ,return shot_list without no_true
             return shot_list
         Args:
-            include_no_truth: if True, the shot_list will not include those without true disruptive information
+            include_all: if include_all=False, return shot_list without shots do not exist actual disruption information in this csv file.
         Returns: shot_list: a list of shot number
 
         """
-
         shot_list = self.result.shots.tolist()
-        if include_no_truth is False:
-            get_shots = []
+        if include_all is False:
+            tmp_shot_list = []
             for i in range(len(shot_list)):
-                true_disruption_time = \
-                    self.result.loc[self.result.shots == shot_list[i], self.ACTUAL_DISRUPTION_TIME].tolist()[0]
+                true_disruption_time = self.result.loc[self.result.shots == shot_list[i], self.ACTUAL_DISRUPTION_TIME].tolist()[0]
                 if true_disruption_time is not None:
                     get_shots.append(shot_list[i])
             shot_list = get_shots
@@ -122,7 +119,7 @@ class Result:
             if len(err_list) > 0:
                 raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
         if shot_no is None:
-            shot_no = self.get_all_shots(include_no_truth=True)
+            shot_no = self.get_all_shots(include_all=True)
         return shot_no
 
     def check_repeated(self, shot_no: Optional[List[int]]):
@@ -233,7 +230,7 @@ class Result:
             raise ValueError(
                 "tardy_alarm_threshold is :{} , lucky_guess_threshold is :{}, fulfill ".format(
                     self.tardy_alarm_threshold, self.lucky_guess_threshold))
-        self.shots = self.get_all_shots(include_no_truth=False)
+        self.shots = self.get_all_shots(include_all=False)
         self.get_warning_time()
 
         self.get_y_pred()
@@ -351,7 +348,7 @@ class Result:
 
         """
 
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
+        if len(set(self.get_all_shots(include_all=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
         [[tn, fp], [fn, tp]] = confusion_matrix(self.y_true, self.y_pred)
         return tp, fn, fp, tn
@@ -379,7 +376,7 @@ class Result:
             accuracy
 
         """
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
+        if len(set(self.get_all_shots(include_all=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
         accuracy = accuracy_score(y_true=self.y_true, y_pred=self.y_pred, normalize=True,
                                   sample_weight=None)
@@ -393,7 +390,7 @@ class Result:
 
         """
 
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
+        if len(set(self.get_all_shots(include_all=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
 
         precision = precision_score(y_true=self.y_true, y_pred=self.y_pred, average='macro')
@@ -406,7 +403,7 @@ class Result:
             recall
 
         """
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
+        if len(set(self.get_all_shots(include_all=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
 
         recall = recall_score(y_true=self.y_true, y_pred=self.y_pred, average='macro')
@@ -428,8 +425,8 @@ class Result:
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
         warning_time_list = []
-        shot_no = self.get_all_shots(include_no_truth=False)
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
+        shot_no = self.get_all_shots(include_all=False)
+        if len(set(self.get_all_shots(include_all=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
         for i in range(len(shot_no)):
             if self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME].tolist()[0] != -1:
@@ -464,13 +461,13 @@ class Result:
             true_dis_num:    the number of true_disruptive
 
         """
-        true_dis_num = len(self.get_all_shots(include_no_truth=False))
+        true_dis_num = len(self.get_all_shots(include_all=False))
         plt.rcParams['font.family'] = 'Arial'
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
         warning_time_list = []
-        shot_no = self.get_all_shots(include_no_truth=False)
-        if len(set(self.get_all_shots(include_no_truth=False)) & set(self.shots)) != len(self.shots):
+        shot_no = self.get_all_shots(include_all=False)
+        if len(set(self.get_all_shots(include_all=False)) & set(self.shots)) != len(self.shots):
             self.get_y()
         for i in range(len(shot_no)):
             if self.result.loc[self.result.shots == shot_no[i], self.WARNING_TIME].tolist()[0] != -1:
