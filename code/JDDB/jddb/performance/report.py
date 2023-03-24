@@ -125,11 +125,15 @@ class Report:
         for i in index:
             tpr_ordered.append(tpr[i])
         fpr.sort()
-        roc_auc = auc(fpr, tpr)
+        roc_auc = auc(fpr, tpr_ordered)
         lw = 2
-         # matplotlib.use('QtAgg')
+
+
         fig = plt.figure()
         fig.tight_layout()
+        plt.figure()
+        plt.rcParams["figure.figsize"] = (10, 10)
+
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
         plt.plot(np.array(fpr), np.array(tpr_ordered), color='darkorange',
