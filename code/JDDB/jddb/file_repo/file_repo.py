@@ -9,6 +9,8 @@ from ..meta_db.meta_db import MetaDB
 class FileRepo:
     def __init__(self, base_path: str):
         self._base_path = base_path
+        self._data_group_name = 'data'
+        self._meta_group_name = 'meta'
 
     @property
     def base_path(self):
@@ -139,13 +141,13 @@ class FileRepo:
         """
         file = self._open_file(self.get_file(shot_no))
         if file:
-            if file.get('data') is None:
-                raise KeyError("Group \"data\" does not exist.")
+            if file.get(self._data_group_name) is None:
+                raise KeyError("Group \"" + self._data_group_name + "\" does not exist.")
             else:
-                if len(file.get('data').keys()) == 0:
+                if len(file.get(self._data_group_name).keys()) == 0:
                     file.close()
                     return list()
-            tag_list = list(file.get('data').keys())
+            tag_list = list(file.get(self._data_group_name).keys())
             file.close()
             return tag_list
         else:
@@ -168,17 +170,17 @@ class FileRepo:
         data_dict = dict()
         file = self._open_file(file_path)
         if file:
-            if file.get('data') is None:
-                raise KeyError("Group \"data\" does not exist.")
+            if file.get(self._data_group_name) is None:
+                raise KeyError("Group \"" + self._data_group_name + "\" does not exist.")
             else:
-                if len(file.get('data').keys()) == 0:
+                if len(file.get(self._data_group_name).keys()) == 0:
                     file.close()
                     return dict()
             if tag_list is None:
-                tag_list = list(file.get('data').keys())
+                tag_list = list(file.get(self._data_group_name).keys())
             for tag in tag_list:
                 try:
-                    data_dict[tag] = file.get('data').get(tag)[()]
+                    data_dict[tag] = file.get(self._data_group_name).get(tag)[()]
                 except ValueError("{}".format(tag)):
                     raise ValueError
             file.close()
@@ -222,13 +224,13 @@ class FileRepo:
         attribute_dict = dict()
         file = self._open_file(self.get_file(shot_no))
         if file:
-            data_group = file.get('data')
+            data_group = file.get(self._data_group_name)
             if data_group is None:
-                raise KeyError("Group \"data\" does not exist.")
+                raise KeyError("Group \"" + self._data_group_name + "\" does not exist.")
             else:
                 dataset = data_group.get(tag)
                 if dataset is None:
-                    raise KeyError("{} does not exist in \"data\"".format(tag))
+                    raise KeyError("{} does not exist in \"" + self._data_group_name + "\"".format(tag))
                 else:
                     if attribute_list is None:
                         attribute_list = dataset.attrs.keys()
@@ -256,16 +258,16 @@ class FileRepo:
         label_dict = dict()
         file = self._open_file(file_path)
         if file:
-            if file.get('meta') is None:
-                raise KeyError("Group \"meta\" does not exist.")
+            if file.get(self._meta_group_name) is None:
+                raise KeyError("Group \"" + self._meta_group_name + "\" does not exist.")
             else:
-                if len(file.get('meta').keys()) == 0:
+                if len(file.get(self._meta_group_name).keys()) == 0:
                     file.close()
                     return dict()
             if label_list is None:
-                label_list = list(file.get('meta').keys())
+                label_list = list(file.get(self._meta_group_name).keys())
             for label in label_list:
-                meta_set = file.get('meta')
+                meta_set = file.get(self._meta_group_name)
                 try:
                     label_dict[label] = meta_set.get(label)[()]
                 except:
@@ -307,15 +309,15 @@ class FileRepo:
         """
         file = self._open_file(file_path, 'r+')
         if file:
-            data_group = file.get('data')
+            data_group = file.get(self._data_group_name)
             if data_group is None:
-                raise ValueError("Group \"data\" does not exist.")
+                raise ValueError("Group \"" + self._data_group_name + "\" does not exist.")
             else:
                 for tag in tag_list:
                     if tag not in data_group.keys():
                         warnings.warn("{} does not exist.".format(tag), category=UserWarning)
                     else:
-                        file.get("data").__delitem__(tag)
+                        file.get(self._data_group_name).__delitem__(tag)
             file.close()
         else:
             raise OSError("Invalid path given.")
@@ -351,13 +353,13 @@ class FileRepo:
         file_path = self.get_file(shot_no)
         file = self._open_file(file_path, 'r+')
         if file:
-            data_group = file.get('data')
+            data_group = file.get(self._data_group_name)
             if data_group is None:
-                raise KeyError("Group \"data\" does not exist.")
+                raise KeyError("Group \"" + self._data_group_name + "\" does not exist.")
             else:
                 dataset = data_group.get(tag)
                 if dataset is None:
-                    raise KeyError("{} does not exist in \"data\"".format(tag))
+                    raise KeyError("{} does not exist in \"" + self._data_group_name + "\"".format(tag))
                 else:
                     for each_attr in attribute_list:
                         if each_attr not in dataset.attrs.keys():
@@ -382,15 +384,15 @@ class FileRepo:
         """
         file = self._open_file(file_path, 'r+')
         if file:
-            meta_group = file.get('meta')
+            meta_group = file.get(self._meta_group_name)
             if meta_group is None:
-                raise ValueError("Group \"meta\" does not exist.")
+                raise ValueError("Group \"" + self._meta_group_name + "\" does not exist.")
             else:
                 for label in label_list:
                     if label not in meta_group.keys():
                         warnings.warn("{} does not exist.".format(label), category=UserWarning)
                     else:
-                        file.get("meta").__delitem__(label)
+                        file.get(self._meta_group_name).__delitem__(label)
             file.close()
         else:
             raise OSError("Invalid path given.")
@@ -426,11 +428,11 @@ class FileRepo:
         """
         file = self._open_file(file_path, 'r+')
         if file:
-            if file.get('data') is None:
-                warnings.warn("Group \"data\" does not exist.", category=UserWarning)
-                data_group = file.create_group("data")
+            if file.get(self._data_group_name) is None:
+                warnings.warn("Group \"" + self._data_group_name + "\" does not exist.", category=UserWarning)
+                data_group = file.create_group(self._data_group_name)
             else:
-                data_group = file.get("data")
+                data_group = file.get(self._data_group_name)
             tag_list = data_dict.keys()
             for tag in tag_list:
                 if tag in data_group.keys():
@@ -481,13 +483,13 @@ class FileRepo:
         """
         file = self._open_file(self.get_file(shot_no), 'r+')
         if file:
-            data_group = file.get('data')
+            data_group = file.get(self._data_group_name)
             if data_group is None:
-                raise KeyError("Group \"data\" does not exist.")
+                raise KeyError("Group \"" + self._data_group_name + "\" does not exist.")
             else:
                 dataset = data_group.get(tag)
                 if dataset is None:
-                    raise KeyError("{} does not exist in \"data\"".format(tag))
+                    raise KeyError("{} does not exist in \"" + self._data_group_name + "\"".format(tag))
                 else:
                     attribute_list = attribute_dict.keys()
                     for each_attr in attribute_list:
@@ -518,18 +520,18 @@ class FileRepo:
         """
         file = self._open_file(file_path, 'r+')
         if file:
-            if file.get('meta') is None:
-                warnings.warn("Group \"meta\" does not exist.", category=UserWarning)
-                meta_group = file.create_group("meta")
+            if file.get(self._meta_group_name) is None:
+                warnings.warn("Group \"" + self._meta_group_name + "\" does not exist.", category=UserWarning)
+                meta_group = file.create_group(self._meta_group_name)
             else:
-                meta_group = file.get("meta")
+                meta_group = file.get(self._meta_group_name)
             label_list = label_dict.keys()
             for label in label_list:
                 if label in meta_group.keys():
                     if overwrite:
                         self.remove_labels_file(file_path, [label])
                     else:
-                        warnings.warn("{} already exist in meta group!".format(label), category=UserWarning)
+                        warnings.warn("{} already exist in" + self._meta_group_name + "group!".format(label), category=UserWarning)
                         continue
                 meta_group.create_dataset(label, data=label_dict[label])
             file.close()
@@ -572,3 +574,5 @@ class FileRepo:
             label_dict = meta_db.get_labels(shot)
             del label_dict['shot']
             self.write_label(shot, label_dict, overwrite)
+if __name__ == '__main__':
+    print("p11")
