@@ -1,28 +1,33 @@
+# %% import
 import json
 from jddb.processor.basic_processors import ResamplingProcessor, NormalizationProcessor, ClipProcessor, TrimProcessor
 from matplotlib import pyplot as plt
 from basic_processor import *
 import os
 
-get_mean_tags=[
-  "\\Ivfp",
-  "\\Ihfp",
-  "\\Iohp",
-  "\\bt",
-  "\\dx",
-  "\\dy",
-  "\\exsad7",
-  "\\exsad10",
-  "\\exsad4",
-  "\\exsad1",
-  "\\ip",
-  "\\vl",
-  "\\polaris_den_mean",
-  "\\sxr_c_mean",
-  "\\fft_amp",
-  "\\fft_fre"
+# %% set up some const
+
+# tags that need to be normalized, the mean and std. are saved in config files
+normalize_tags = [
+    "\\Ivfp",
+    "\\Ihfp",
+    "\\Iohp",
+    "\\bt",
+    "\\dx",
+    "\\dy",
+    "\\exsad7",
+    "\\exsad10",
+    "\\exsad4",
+    "\\exsad1",
+    "\\ip",
+    "\\vl",
+    "\\polaris_den_mean",
+    "\\sxr_c_mean",
+    "\\fft_amp",
+    "\\fft_fre"
 ]
 
+# tags to be kept after all the processing
 keep_tags = [
     "\\Ivfp",
     "\\Ihfp",
@@ -38,16 +43,23 @@ keep_tags = [
     "\\fft_fre",
 ]
 
+# slicing parameters
 window_length = 2500
 resampled_rate = 1000
-clip_start_time = 0.05
 overlap = 0.9
+# clip the signal at
+clip_start_time = 0.05
 
-source_shots_path = "G:\\datapractice\\example_lry\\Example_shot_files"
-processed_shots_path = "G:\\datapractice\\example_lry\\example_result_data\\processed_shotsets"
-picture_path = "G:\\datapractice\\example_lry\\example_result_data\\fre_picture"
-source_shots_path = os.path.join(source_shots_path, "$shot_2$XX", "$shot_1$X")
-processed_shots_path = os.path.join(processed_shots_path, "$shot_2$00", "$shot_1$0")
+# file repo paths
+source_shots_path = "..//FileRepo//TestShots//$shot_2$xx//$shot_1$x//"
+processed_shots_path = "..//FileRepo//ProcessedShots//$shot_2$xx//$shot_1$x//"
+image_path = "..//FileRepo//_temp_image//"
+
+# %% define some helper functions
+
+# read a dict from json, in this example the config file stores the
+# mean and std for some signals
+
 
 def read_config(file_name: str):
     """"读取配置"""
@@ -55,140 +67,138 @@ def read_config(file_name: str):
         config = json.load(f)
     return config
 
-def find_tags(string, all_tags):
+
+def find_tags(prefix, all_tags):
     """
-        Given the string lookup, the output contain tags with the same content
+        return tags that start with the prefix
     :param string: "string"
-    :return: tags with the same content
+    :return: matching tags as a list[sting]
     """
-    return list(filter(lambda tag: tag.encode("utf-8").decode("utf-8", "ignore")[0:len(string)] == string, all_tags))
+    return list(filter(lambda tag: tag.encode("utf-8").decode("utf-8", "ignore")[0:len(prefix)] == prefix, all_tags))
 
 
+# %%
 if __name__ == '__main__':
-    # %%load data
+    # read mean and std for normalization
     config_mean = read_config("config_mean.json")
     config_std = read_config("config_std.json")
+
+    # get file repo
     source_file_repo = FileRepo(source_shots_path)
     processed_file_repo = FileRepo(processed_shots_path)
+    # create a shot set with a file
     source_shotset = ShotSet(source_file_repo)
-    shotlist = source_shotset.shot_list
-    all_tags = list(source_shotset.get_shot(shotlist[0]).tags)
-    # processed_shotset = ShotSet(processed_file_repo)
-    # shotlist = processed_shotset.shot_list
-    # all_tags = list(processed_shotset.get_shot(shotlist[0]).tags)
+    # get all shots and tags from the file repo
+    shot_list = source_shotset.shot_list
+    all_tags = list(source_shotset.get_shot(shot_list[0]).tags)
 
+    # %% [markdown]
+    # below are steps to extract features
 
-    # # %%
+    # %%
     # 1.slice MA
+    # generate a new signal with is moving window slices of a source signal
+    # it is for FFT processors
     processed_shotset = source_shotset.process(
-        processor=SliceProcessor(window_length=window_length, overlap=overlap), input_tags=["\\MA_POL2_P01"],
+        processor=SliceProcessor(window_length=window_length, overlap=overlap),
+        input_tags=["\\MA_POL2_P01"],
         output_tags=["\\sliced_MA"], save_repo=processed_file_repo)
-    # # %%
-    # #
-    # # %%
-    # 2. fft MA
-    processed_shotset = processed_shotset.process(processor=FFTProcessor(),
-                                                  input_tags=[["\\sliced_MA", "\\MA_POL2_P01"]],
-                                                  output_tags=[["\\fft_amp", "\\fft_fre"]],
-                                                  save_repo=processed_file_repo)
-    # %%
-    #
-    # %%
-    # # 3.mean
-    # # calc mean of "'\\polaris_den_v...'"
-    #
-    den = find_tags("\\polar", all_tags)
-    processed_shotset = processed_shotset.process(processor=Mean(), input_tags=[den],
-                                                  output_tags=["\\polaris_den_mean"],
-                                                  save_repo=processed_file_repo)
-    #
-    # %%
 
     # %%
-    # # calc mean of "'\\sxr_cc...'"
+    # 2. fft MA mir array signal
+    processed_shotset = processed_shotset.process(
+        processor=FFTProcessor(),
+        input_tags=["\\sliced_MA"],
+        output_tags=[["\\fft_amp", "\\fft_fre"]],
+        save_repo=processed_file_repo)
+
+    # %%
+    # 3.mean
+    # calculate average of an array diagnostics output to a new signal
+
+    # average density
+    den = find_tags("\\polar", all_tags)
+    processed_shotset = processed_shotset.process(processor=Mean(),
+                                                  input_tags=[den],
+                                                  output_tags=[
+                                                      "\\polaris_den_mean"],
+                                                  save_repo=processed_file_repo)
+    # average soft s-ray
     sxr = find_tags("\\sxr_c", all_tags)
-    processed_shotset = processed_shotset.process(processor=Mean(), input_tags=[sxr],
+    processed_shotset = processed_shotset.process(processor=Mean(),
+                                                  input_tags=[sxr],
                                                   output_tags=["\\sxr_c_mean"],
-                                                  save_repo=
-                                                  processed_file_repo)
-    # # %%
-    #
-    # # %%
-    # # 5. resample all_tags
-    all_tags = (list(processed_shotset.get_shot(shotlist[0]).tags))
+                                                  save_repo=processed_file_repo)
+    # %%
+    # 5. resample all_tags
+    # down sample to 1kHz
+    all_tags = (list(processed_shotset.get_shot(shot_list[0]).tags))
+    # sliced signalneed not to be resampled
     all_tags.remove("\\sliced_MA")
     processed_shotset = processed_shotset.process(processor=ResamplingProcessor(resampled_rate),
                                                   input_tags=all_tags,
                                                   output_tags=all_tags,
                                                   save_repo=processed_file_repo)
-    # # # %%
-    # #
-    # # %%
-    # #6. normalization all(Ivfp,Ihfp)
-    # Each shot generates a concatenate_signal
-    # Read the concatenate_signal of each cannon and concatenate
+    # %%
+    # 6. normalization all raw signals
+    for tag in normalize_tags:
+        mean = config_mean[tag]
+        std = config_std[tag]
 
-    for index in range(len(get_mean_tags)):
-        mean = config_mean[get_mean_tags[index]]
-        std = config_std[get_mean_tags[index]]
+        processed_shotset = processed_shotset.process(
+            processor=NormalizationProcessor(mean=float(mean), std=float(std)),
+            input_tags=[tag],
+            output_tags=[tag],
+            save_repo=processed_file_repo)
 
-        processed_shotset = processed_shotset.process(processor=NormalizationProcessor(mean=float(mean), std=float(std)),
-                                                      input_tags=[get_mean_tags[index]],
-                                                      output_tags=[get_mean_tags[index]],
-                                                      save_repo=processed_file_repo)
-    # # %%
-    #
-    # # %%
-    ## 7.drop siganl
-    exsad = find_tags("\\exsad", all_tags)
-    processed_shotset = processed_shotset.remove(tags=keep_tags + exsad, keep=True,
+    # %%
+    # 7.drop useless raw signals
+    exsads = find_tags("\\exsad", all_tags)
+    processed_shotset = processed_shotset.remove(tags=keep_tags + exsads, keep=True,
                                                  save_repo=processed_file_repo)
     # %%
+    # 8.clip ,remove signal out side of the time of interests
+    # get the new set of tags, after the processing the tags have changed
+    all_tags = list(processed_shotset.get_shot(shot_list[0]).tags)
+    processed_shotset = processed_shotset.process(
+        processor=ClipProcessor(
+            start_time=clip_start_time, end_time_tag="DownTime"),
+        input_tags=all_tags,
+        output_tags=all_tags,
+        save_repo=processed_file_repo)
 
     # %%
-    # # 8.clip
-    all_tags = list(processed_shotset.get_shot(shotlist[0]).tags)
+    # 9. add disruption labels for each time point as a signal called alarm_tag
     processed_shotset = processed_shotset.process(
-        processor=ClipProcessor(start_time=clip_start_time, end_time_tag="DownTime"),
-        input_tags=all_tags,
-        output_tags=all_tags, save_repo=processed_file_repo)
-
-
-    # # %%
-    #
-    # # %%
-    #9.alarm_tag
-    processed_shotset = processed_shotset.process(
-        processor=AlarmTag(lead_time=0.01, disruption_label="IsDisrupt", downtime_label="DownTime"),
+        processor=AlarmTag(
+            lead_time=0.01, disruption_label="IsDisrupt", downtime_label="DownTime"),
         input_tags=["\\ip"], output_tags=["\\alram_tag"],
         save_repo=processed_file_repo)
 
-
-    # # %%
-    #10.trim_tag
-    all_tags = list(processed_shotset.get_shot(shotlist[0]).tags)
+    # %%
+    # 10. trim all signal
+    all_tags = list(processed_shotset.get_shot(shot_list[0]).tags)
     processed_shotset = processed_shotset.process(TrimProcessor(),
                                                   input_tags=[all_tags],
                                                   output_tags=[all_tags],
                                                   save_repo=processed_file_repo)
 
     # %%
-    #
-    # %%picture
+    # plot the result
     # p1 ip
     # p2 fft
-    shot_plt = processed_shotset.get_shot(shotlist[0])
+    shot_plt = processed_shotset.get_shot(shot_list[0])
     signal_ip = shot_plt.get("\\ip")  # p1
     signal_MA_amp = shot_plt.get("\\fft_amp")  # p2
     signal_MA_fre = shot_plt.get("\\fft_fre")  # p2
     end_time = signal_MA_amp.time[-1]
 
-    # Draw a graph and save the specified path
-    # Image saving path
-    dir_name = os.path.join(picture_path, str(shotlist[0]) + '.jpg')
+    # save the plot
+    dir_name = os.path.join(image_path, str(shot_list[0]) + '.jpg')
     fig = plt.figure(1, figsize=(23, 13))
 
     plt.subplots_adjust(wspace=0.4, hspace=0.2)
+
     # "ip"
     plt.subplot(2, 1, 1)  # p1
     plt.plot(signal_ip.time, signal_ip.data)
@@ -205,5 +215,5 @@ if __name__ == '__main__':
     ax1.set_ylabel("Max_Amp", color='b')
     ax2.set_ylabel("fre", color='r')
     plt.grid(axis="x", linestyle='-.', which='major')
-    plt.suptitle(str(shotlist[0]) + "_5ms", x=0.5, y=0.98)
+    plt.suptitle(str(shot_list[0]) + "_5ms", x=0.5, y=0.98)
     plt.show()
