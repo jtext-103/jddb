@@ -78,11 +78,8 @@ class Result:
 
     def get_all_shots(self, include_all=True):
         """
-            get all shot_list
-            return shot_list
-        Args:
-            include_all: if include_all=False, return shot_list without shots do not exist actual disruption information in this csv file.
-        Returns: shot_list: a list of shot number
+        get all shot_list return shot_list Args: include_all: if include_all=False, return shot_list without shots do
+        not exist actual disruption information in this csv file. Returns: shot_list: a list of shot number
 
         """
         shot_list = self.result[self.SHOT_NO_H].tolist()

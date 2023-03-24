@@ -69,8 +69,6 @@ class Report:
         Args:
             result: a csv file that is instantiated
             model_name: a name of str
-            tardy_alarm_threshold: unit:s
-            lucky_guess_threshold: unit:s
 
         """
 
