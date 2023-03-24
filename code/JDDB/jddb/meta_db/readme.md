@@ -28,23 +28,23 @@
       Disconnect from MetaDB after any other action.
 
     **Example :**
-      ```python
-        # Connect to the MetaDB
-        from jddb import meta_db
-        connection_str = {
-                  "host" : "localhost",
-                  "port" : 27017,
-                  "username" : "DDBUser",
-                  "password" : "*******",
-                  "database": "JDDB"
-                }
-        collection = "Labels"
-        db = meta_db.MetaDB()
-        labels = db.connect(connection_str,collection)
+    ```python
+    # Connect to the MetaDB
+    from jddb import meta_db
+    connection_str = {
+              "host" : "localhost",
+              "port" : 27017,
+              "username" : "DDBUser",
+              "password" : "*******",
+              "database": "JDDB"
+            }
+    collection = "Labels"
+    db = meta_db.MetaDB()
+    labels = db.connect(connection_str,collection)
 
-        # Disconnect from MetaDB
-        db.disconnect()
-        ```
+    # Disconnect from MetaDB
+    db.disconnect()
+    ```
 - ### **db.get_labels(shot_no)**  
   **Description:** 
     Get all meta of the shot inputed  
@@ -104,7 +104,7 @@
     Get non-disruption shots with [" ip", " bt"] diagnostics available in the shot number range of [1064000, 1066649]
     ```python
     shot_list = [shot for shot in range(1064000, 1066649+1)]
-    db.query_valid(shot_list=shot_list, label_true=[r"ip", r"bt"], label_false=[r"IsDisrupt"])
+    db.query_valid(shot_list=shot_list, label_true=["ip", "bt"], label_false=["IsDisrupt"])
 
     -Return:
     [1064000, 1064001, 1064002, 1064003, 1064004,  .... 1066642, 1066643, 1066644, 1066646, 1066648]

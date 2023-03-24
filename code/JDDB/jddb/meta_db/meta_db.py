@@ -5,23 +5,21 @@ from pymongo import MongoClient
 
 class MetaDB(object):
     def __init__(self, connection_str, collection):
+        self.labels = None
+        self.client = None
         self.connect(connection_str, collection)
 
-
-    def __init__(self):
-        self.labels = None
-
     def connect(self, connection_str, collection):
-        client = MongoClient(connection_str["host"], int(connection_str["port"]))
-        db = client[connection_str["database"]]
+        self.client = MongoClient(connection_str["host"], int(connection_str["port"]))
+        db = self.client[connection_str["database"]]
         if ("username" in connection_str.keys()) & ("password" in connection_str.keys()):
             db.authenticate(connection_str["username"], connection_str["password"])
         labels = db[collection]
         self.labels = labels
 
     def disconnect(self):
-        if self.labels is not None:
-            self.labels.close()
+        if self.client is not None:
+            self.client.close()
 
     def updata_labels(self, shot_no, labels):
         self.labels.update({"shot":int(shot_no)}, {"$set":labels}, True)
