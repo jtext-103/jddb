@@ -165,12 +165,13 @@ if __name__ == '__main__':
 
 
     # # %%
-    #9.trim_tag
+    #10.trim_tag
     all_tags = list(processed_shotset.get_shot(shotlist[0]).tags)
     processed_shotset = processed_shotset.process(TrimProcessor(),
                                                   input_tags=[all_tags],
                                                   output_tags=[all_tags],
                                                   save_repo=processed_file_repo)
+
     # %%
     #
     # %%picture
