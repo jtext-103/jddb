@@ -61,7 +61,7 @@ class Report:
         """
         save report
         """
-        self.report.to_excel(self.report_csv_path, index=False)
+        self.report.to_csv(self.report_csv_path, index=False)
 
     def add(self, result, model_name: str):
         """
@@ -106,7 +106,7 @@ class Report:
         else:
             pass
 
-    def roc(self, roc_file_path):
+    def roc(self, roc_file_path =None):
         """
             draw roc curve
         Args:
@@ -114,8 +114,8 @@ class Report:
 
         """
 
-        fpr = self.report.report[self.FPR].tolist()
-        tpr = self.report.report[self.TPR].tolist()
+        fpr = self.report[self.FPR].tolist()
+        tpr = self.report[self.TPR].tolist()
         tpr_ordered = []
         index = np.array(fpr).argsort()
         for i in index:
@@ -134,7 +134,8 @@ class Report:
         plt.ylim([0.0, 1.05])
         plt.title('Receiver operating characteristic')
         plt.legend(loc="lower right")
-        plt.savefig(os.path.join(roc_file_path, 'Receiver_operating_characteristic.png'), dpi=300)
+        if roc_file_path:
+            plt.savefig(os.path.join(roc_file_path, 'Receiver_operating_characteristic.png'), dpi=300)
         plt.show(block=True)
 
 # if __name__ == '__main__':

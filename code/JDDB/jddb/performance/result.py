@@ -13,6 +13,9 @@ from ..file_repo import FileRepo
 
 
 class Result:
+    """
+        define header
+    """
     IS_DISRUPT = "IsDisrupt"
     DOWN_TIME = "DownTime"
     SHOT_NO_H = 'shot_no'
@@ -78,8 +81,12 @@ class Result:
 
     def get_all_shots(self, include_all=True):
         """
-        get all shot_list return shot_list Args: include_all: if include_all=False, return shot_list without shots do
-        not exist actual disruption information in this csv file. Returns: shot_list: a list of shot number
+            get all shot_list return shot_list
+        Args:
+             include_all: if include_all=False, return shot_list without shots do
+        not exist actual disruption information in this csv file.
+        Returns:
+            shot_list: a list of shot number
 
         """
         shot_list = self.result[self.SHOT_NO_H].tolist()
@@ -396,7 +403,7 @@ class Result:
         recall = recall_score(y_true=self.y_true, y_pred=self.y_pred, average='macro')
         return recall
 
-    def warning_time_histogram(self, file_path: str, time_bins: List[float]):
+    def warning_time_histogram(self,  time_bins: List[float], file_path = None):
         """
                 this function should be called before call self.calc_metrics().
                 Plot a column chart, the x-axis is time range,
@@ -435,16 +442,17 @@ class Result:
             linewidth=2.0
         )
         ax.set_title("warning_time_histogram", fontsize=15)
-        plt.savefig(os.path.join(file_path, 'histogram_warning_time.png'), dpi=300)
+        if file_path:
+            plt.savefig(os.path.join(file_path, 'histogram_warning_time.png'), dpi=300)
 
-    def accumulate_warning_time_plot(self, output_dir: str):
+    def accumulate_warning_time_plot(self, file_path=None):
 
         """
                 this function should be called before call self.calc_metrics().
                 Plot a column chart, the x-axis is time range,
             the y-axis is the number of shot less in that time period.
         Args:
-            output_dir:    the path to save .png
+            file_path:    the path to save .png
             true_dis_num:    the number of true_disruptive
 
         """
@@ -486,8 +494,8 @@ class Result:
         ax.tick_params(which='both', direction='in', width=axis_width)
         ax.tick_params(which='major', length=major_tick_length)
         ax.tick_params(which='minor', length=minor_tick_length)
-
-        plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
+        if file_path:
+            plt.savefig(os.path.join(file_path, 'accumulate_warning_time.png'), dpi=300)
 
 
 
