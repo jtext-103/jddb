@@ -217,5 +217,3 @@ if __name__ == '__main__':
     plt.grid(axis="x", linestyle='-.', which='major')
     plt.suptitle(str(shot_list[0]) + "_5ms", x=0.5, y=0.98)
     plt.show()
-
-# %%
