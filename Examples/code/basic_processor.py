@@ -87,7 +87,7 @@ class FFTProcessor(BaseProcessor):
             self.amp_signal.data = raw_cover
 
     def amp_max(self):
-        fs = self.signal_rate.attributes['SampleRate']
+        fs = self.signal_rate
         raw = self.amp_signal.data
         amp_cover = np.empty(shape=0, dtype=float)
         fre_cover = np.empty(shape=0, dtype=float)
