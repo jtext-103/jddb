@@ -48,7 +48,6 @@ class Result:
         df_result.loc[0, ['tardy_alarm_threshold', 'lucky_guess_threshold']] = [self.tardy_alarm_threshold,
                                                                                 self.lucky_guess_threshold]
         self.result = df_result
-        self.save()
 
     def read(self):
         """

@@ -32,7 +32,6 @@ class Report:
 
         df_report = pd.DataFrame(columns=self.__header)
         self.report = df_report
-        self.save()
 
     def read(self):
         """
