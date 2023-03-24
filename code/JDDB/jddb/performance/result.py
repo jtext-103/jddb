@@ -7,7 +7,16 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 import matplotlib
+import os
+import h5py
+import warnings
+from typing import List
+from ..meta_db import MetaDB
 
+
+
+
+from ..file_repo import FileRepo
 
 class Result:
 
@@ -149,6 +158,30 @@ class Result:
                 predicted_disruption_time[i] = -1
             self.result.loc[row_index, ['shot_no', 'predicted_disruption', 'predicted_disruption_time']] = \
                 [shot_no[i], predicted_disruption[i], predicted_disruption_time[i]]
+
+    def get_all_truth(self, shot_no):
+        """
+                check input shot_no whether exist
+                add true data
+        Args:
+            shot_no: a list of shot number
+            predicted_disruption:   a list of value 0 or 1, 1 is disruptive
+            predicted_disruption_time: a list of predicted_disruption_time, unit :s
+
+        Returns:
+
+        """
+
+
+        shot_no = self.check_unexisted(shot_no)
+
+
+        for i in range(len(shot_no)):
+            if self.result.loc[self.result.shot_no == shot_no[i], 'true_disruption'].tolist()[0] == 0:
+                true_disruption_time[i] = -1
+            self.result.loc[
+                self.result[self.result.shot_no == shot_no[i]].index[0], ['true_disruption', 'true_disruption_time']] = \
+                [true_disruption[i], true_disruption_time[i]]
 
     def remove(self,  shot_no: List[int]):
         """
@@ -475,13 +508,34 @@ class Result:
 
         plt.savefig(os.path.join(output_dir, 'accumulate_warning_time.png'), dpi=300)
 
-# if __name__ == '__main__':
-#     result = Result("G:\datapractice\\test\\test.xlsx")
-# #     shot_list = [100561, 100562, 100563]
-# #     true_disruption = [1, 0, 1]
-# #     true_disruption_time = [0.13, 0.56, 0.41]
-# #     result.add(shot_list, true_disruption, true_disruption_time)
-# #     result.calc_metrics()
-# #     result.remove([100563])
+if __name__ == '__main__':
+    result = Result("G:\datapractice\\test\\test.xlsx")
+
+#     shot_list = [100561, 100562, 100563]
+#     true_disruption = [1, 0, 1]
+#     true_disruption_time = [0.13, 0.56, 0.41]
+#     result.add(shot_list, true_disruption, true_disruption_time)
+#     result.calc_metrics()
+#     result.remove([100563])
 
 
+
+
+message = {
+            "host" : "localhost",
+            "port" : 27017,
+            "username" : "DDBUser",
+            "password" : "tokamak!",
+            "database": "DDB"
+          }
+
+"""
+查看在给定炮区间中，各给定诊断的可用炮数量。看条件增删诊断，返回诊断都完整的炮号complete_shot
+"""
+c = ConnectDB()
+labels = c.connect(message, "tags")
+db = MetaDB(labels)
+re = db.get_labels(1052637)
+print(re)
+
+c.disconnect()

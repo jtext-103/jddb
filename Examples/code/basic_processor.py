@@ -11,29 +11,6 @@ from scipy import signal as sig
 from copy import deepcopy
 
 
-class TimeTrimProcessor(BaseProcessor):
-    """
-        Given the start and end times, output the clipped timing signal
-    """
-    def __init__(self, start_time: float, end_time: float = None, end_time_tag: str = None):
-        super().__init__()
-        self._start_time = start_time
-        self._end_time_tag = end_time_tag
-        self._end_time = end_time
-
-    def transform(self, signal: Signal) -> Signal:
-        if self._end_time_tag:
-            self._end_time = self.params[self._end_time_tag]
-        if self._end_time is None:
-            self._end_time = signal.time[-1]
-        clipped_data = signal.data[(self._start_time <= signal.time) & (signal.time <= self._end_time)]
-        clipped_prop_dict = deepcopy(signal.attributes)
-        start_time_idx = np.argmax(signal.time > self._start_time)
-        clipped_prop_dict['StartTime'] = signal.time[start_time_idx]
-
-        return Signal(data=clipped_data, attributes=clipped_prop_dict)
-
-
 class SliceProcessor(BaseProcessor):
     """
             input the point number of the window  and overlap rate of the given window ,
@@ -153,32 +130,6 @@ class Concatenate(BaseProcessor):
 
         return new_signal
 
-# class AlarmTag(BaseProcessor):
-#     """
-#             Give arbitrary signals, extract downtime, timeline,
-#         and generate actual warning time labels
-#
-#     """
-#
-#     def __init__(self, lead_time, fs, start_time):
-#         super().__init__()
-#         self.lead_time = lead_time
-#         self.fs = fs
-#         self.start_time = start_time
-#
-#     def transform(self, signal: Signal):
-#         copy_signal = deepcopy(signal)
-#         undisrupt_number = int(self.fs * (self.params['DownTime'] + self.lead_time))
-#         new_signal = Signal(data=np.empty(shape=[0], dtype=bool), attributes=dict())
-#         new_data = np.array([bool(0) for i in range(undisrupt_number)])
-#         new_data = np.append(new_data,
-#                              np.array([bool(1) for i in range(int(self.fs * copy_signal.time[-1] - undisrupt_number))]),
-#                              axis=0)
-#         new_signal.attributes['SampleRate'] = self.fs
-#         new_signal.attributes['StartTime'] = self.start_time
-#         new_signal.data = new_data
-#         return new_signal
-
 
 class AlarmTag(BaseProcessor):
     """
@@ -196,14 +147,21 @@ class AlarmTag(BaseProcessor):
         copy_signal = deepcopy(signal)
         fs = copy_signal.attributes['SampleRate']
         start_time = copy_signal.attributes['StartTime']
+
         if self.params[self._disruption_label] == 1:
             undisrupt_number = int(fs * (self.params[self._downtime_label] - self.lead_time - start_time))
-            new_data = np.zeros(shape=undisrupt_number, dtype=int)
-            disruptive_number = len(copy_signal.data)-undisrupt_number
-            if disruptive_number > 0:
-                new_data = np.append(new_data, np.ones(shape=disruptive_number, dtype=int), axis=0)
         else:
-            new_data = np.zeros(shape=(len(copy_signal.data)-int(start_time * fs)), dtype=int)
+            undisrupt_number = len(copy_signal.data)
+        if undisrupt_number < len(copy_signal.data):
+            # new_data = np.zeros(shape=undisrupt_number, dtype=int)
+            new_data = np.zeros(shape=1, dtype=int)
+            for i in range(len(copy_signal.data)-1):
+                if i <= undisrupt_number-1:
+                    new_data = np.append(new_data, np.array(0))
+                else:
+                    new_data= np.append(new_data, np.array(1))
+        else:
+            new_data = np.zeros(shape=len(copy_signal.data), dtype=int)
 
         new_signal = Signal(data=new_data, attributes=dict())
         new_signal.attributes['SampleRate'] = fs
