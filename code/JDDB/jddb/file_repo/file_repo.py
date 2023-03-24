@@ -574,3 +574,5 @@ class FileRepo:
             label_dict = meta_db.get_labels(shot)
             del label_dict['shot']
             self.write_label(shot, label_dict, overwrite)
+if __name__ == '__main__':
+    print("p11")

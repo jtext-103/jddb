@@ -1,5 +1,5 @@
 import json
-from jddb.processor.basic_processors import ResamplingProcessor, NormalizationProcessor
+from jddb.processor.basic_processors import ResamplingProcessor, NormalizationProcessor, ClipProcessor, TrimProcessor
 from matplotlib import pyplot as plt
 from basic_processor import *
 import os
@@ -73,9 +73,12 @@ if __name__ == '__main__':
     source_shotset = ShotSet(source_file_repo)
     shotlist = source_shotset.shot_list
     all_tags = list(source_shotset.get_shot(shotlist[0]).tags)
+    # processed_shotset = ShotSet(processed_file_repo)
+    # shotlist = processed_shotset.shot_list
+    # all_tags = list(processed_shotset.get_shot(shotlist[0]).tags)
 
 
-    # %%
+    # # %%
     # 1.slice MA
     processed_shotset = source_shotset.process(
         processor=SliceProcessor(window_length=window_length, overlap=overlap), input_tags=["\\MA_POL2_P01"],
@@ -108,19 +111,19 @@ if __name__ == '__main__':
                                                   output_tags=["\\sxr_c_mean"],
                                                   save_repo=
                                                   processed_file_repo)
-    # %%
-
-    # %%
-    # 5. resample all_tags
+    # # %%
+    #
+    # # %%
+    # # 5. resample all_tags
     all_tags = (list(processed_shotset.get_shot(shotlist[0]).tags))
     all_tags.remove("\\sliced_MA")
     processed_shotset = processed_shotset.process(processor=ResamplingProcessor(resampled_rate),
                                                   input_tags=all_tags,
                                                   output_tags=all_tags,
                                                   save_repo=processed_file_repo)
-    # %%
-
-    # %%
+    # # # %%
+    # #
+    # # %%
     # #6. normalization all(Ivfp,Ihfp)
     # Each shot generates a concatenate_signal
     # Read the concatenate_signal of each cannon and concatenate
@@ -133,9 +136,9 @@ if __name__ == '__main__':
                                                       input_tags=[get_mean_tags[index]],
                                                       output_tags=[get_mean_tags[index]],
                                                       save_repo=processed_file_repo)
-    # %%
-
-    # %%
+    # # %%
+    #
+    # # %%
     ## 7.drop siganl
     exsad = find_tags("\\exsad", all_tags)
     processed_shotset = processed_shotset.remove(tags=keep_tags + exsad, keep=True,
@@ -143,22 +146,34 @@ if __name__ == '__main__':
     # %%
 
     # %%
-    # # # 8.clip
-    all_tags = processed_shotset.get_shot(shotlist[0]).tags
+    # # 8.clip
+    all_tags = list(processed_shotset.get_shot(shotlist[0]).tags)
     processed_shotset = processed_shotset.process(
-        processor=TimeTrimProcessor(start_time=clip_start_time, end_time_tag="DownTime"),
+        processor=ClipProcessor(start_time=clip_start_time, end_time_tag="DownTime"),
         input_tags=all_tags,
         output_tags=all_tags, save_repo=processed_file_repo)
-    # %%
 
-    # %%
+
+    # # %%
+    #
+    # # %%
     #9.alarm_tag
     processed_shotset = processed_shotset.process(
         processor=AlarmTag(lead_time=0.01, disruption_label="IsDisrupt", downtime_label="DownTime"),
         input_tags=["\\ip"], output_tags=["\\alram_tag"],
         save_repo=processed_file_repo)
-    # %%
 
+
+    # # %%
+    #10.trim_tag
+    all_tags = list(processed_shotset.get_shot(shotlist[0]).tags)
+    processed_shotset = processed_shotset.process(TrimProcessor(),
+                                                  input_tags=[all_tags],
+                                                  output_tags=[all_tags],
+                                                  save_repo=processed_file_repo)
+
+    # %%
+    #
     # %%picture
     # p1 ip
     # p2 fft
