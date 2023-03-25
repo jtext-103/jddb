@@ -283,7 +283,7 @@ class Result:
         tardy_alarm = self.tardy_alarm_threshold
         if ignore_threshold:
             tardy_alarm = 0
-            lucky_guess = np.inf
+            lucky_guess = 1e100
         if truth == 1:
             if pred == 1:
                 warning_time = truth_downtime - pred_time
@@ -435,8 +435,8 @@ class Result:
             height=counts,
             width=0.2,
             align="center",
-            color="cornflowerblue",
-            edgecolor="darkblue",
+            color="cornflower blue",
+            edgecolor="dark-blue",
             linewidth=2.0
         )
         ax.set_title("warning_time_histogram", fontsize=15)
