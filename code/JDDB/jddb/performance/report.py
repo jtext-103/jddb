@@ -34,16 +34,7 @@ class Report:
         if os.path.exists(self.report_csv_path):
             self.read()
         else:
-            self.create_df()
-
-    def create_df(self):
-        """
-            add header
-            set property
-        """
-
-        df_report = pd.DataFrame(columns=self.__header)
-        self.report = df_report
+            self.report = pd.DataFrame(columns=self.__header)
 
     def read(self):
         """
@@ -59,7 +50,7 @@ class Report:
 
     def save(self):
         """
-            save report
+            save report in disk
         """
         self.report.to_csv(self.report_csv_path, index=False)
 
@@ -110,7 +101,7 @@ class Report:
         else:
             pass
 
-    def plot_roc(self, roc_file_path =None):
+    def plot_roc(self, roc_file_path=None):
         """
             draw roc curve
         Args:
@@ -142,5 +133,3 @@ class Report:
         if roc_file_path:
             plt.savefig(os.path.join(roc_file_path, 'Receiver_operating_characteristic.png'), dpi=300)
         plt.show(block=True)
-
-

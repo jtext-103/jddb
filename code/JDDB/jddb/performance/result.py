@@ -61,7 +61,6 @@ class Result:
         self.result = None
         self.y_pred = []
         self.y_true = []
-        self.shots = []
         self.ignore_thresholds = False
         if os.path.exists(csv_path):
             self.read()
@@ -80,7 +79,7 @@ class Result:
             check file format
             read in      self.tardy_alarm_threshold
                        self.lucky_guess_threshold
-            read in all shot
+            read in all shots
         """
 
         self.result = pd.read_csv(self.csv_path)
@@ -94,67 +93,12 @@ class Result:
 
     def save(self):
         """
-            after all result.save(),  the file will be saved in disk, else not
+            the file will be saved in disk after all processing, else not
         """
 
         self.result.loc[0, [self.TARDY_ALARM_THRESHOLD_H]] = self.lucky_guess_threshold
         self.result.loc[0, [self.LUCKY_GUESS_THRESHOLD_H]] = self.tardy_alarm_threshold
         self.result.to_csv(self.csv_path, index=False)
-
-    def get_all_shots(self, include_all=True):
-        """
-                get all shot_list return shot_list
-            Args:
-                 include_all:
-                 if  include_all=True, return all shot of dataframe
-                 if  include_all=False, return shot list except that the value of actual_disruption is np.nan
-            Returns:
-                shot_list: a list of shot number
-        """
-
-        shot_list = self.result[self.SHOT_NO_H].tolist()
-        shot_list.remove(-10)
-        if include_all is False:
-            tmp_shot_list = []
-            for shot_no in shot_list:
-                true_disruption = \
-                    self.result.loc[self.result[self.SHOT_NO_H] == shot_no, self.ACTUAL_DISRUPTION_H].tolist()[0]
-                if true_disruption == 0 or true_disruption == 1:
-                    tmp_shot_list.append(shot_no)
-            shot_list = tmp_shot_list
-        return shot_list
-
-    def check_unexisted(self, shot_list: Optional[List[int]] = None):
-        """
-            check whehter shot_list existed
-            if unexisted, raise error
-            if shot_list is None ,call get all shots()
-        """
-
-        err_list = []
-        for i in range(len(shot_list)):
-            if shot_list[i] not in self.result[self.SHOT_NO_H].tolist():
-                err_list.append(shot_list[i])
-            if len(err_list) > 0:
-                raise ValueError("THE data of number or numbers:{} do not exist".format(err_list))
-        if shot_list is None:
-            shot_list = self.get_all_shots(include_all=True)
-        return shot_list
-
-    def check_repeated(self, shot_list: Optional[List[int]]):
-        """
-            check whehter shot_list repeated
-            if repeated, raise error
-        Args:
-            shot_list: a list of shot number
-        """
-
-        err_list = []
-        for i in range(len(shot_list)):
-            if shot_list[i] in self.result[self.SHOT_NO_H].tolist():
-                err_list.append(shot_list[i])
-        if len(err_list) > 0:
-            raise ValueError("data of shot_list:{} has already existed".format(err_list))
 
     def add(self, shot_list: List[int], predicted_disruption: List[int], predicted_disruption_time: List[float]):
         """
@@ -236,6 +180,29 @@ class Result:
         for i in range(len(shot_list)):
             self.result = self.result.drop(self.result[self.result[self.SHOT_NO_H] == shot_list[i]].index)
 
+    def get_all_shots(self, include_all=True):
+        """
+                get all shot_list return shot_list
+            Args:
+                 include_all:
+                 if  include_all=True, return all shot of dataframe
+                 if  include_all=False, return shot list except that the value of actual_disruption is np.nan
+            Returns:
+                shot_list: a list of shot number
+        """
+
+        shot_list = self.result[self.SHOT_NO_H].tolist()
+        shot_list.remove(-10)
+        if include_all is False:
+            tmp_shot_list = []
+            for shot_no in shot_list:
+                true_disruption = \
+                    self.result.loc[self.result[self.SHOT_NO_H] == shot_no, self.ACTUAL_DISRUPTION_H].tolist()[0]
+                if true_disruption == 0 or true_disruption == 1:
+                    tmp_shot_list.append(shot_no)
+            shot_list = tmp_shot_list
+        return shot_list
+
     def calc_metrics(self):
         """
             this function should be called before setting self.tardy_alarm_threshold and self.lucky_guess_threshold,
@@ -261,7 +228,7 @@ class Result:
                 self.y_true.append(1 * tp + 0 * fp + 0 * tn + 1 * fn)
 
         self.confusion_matrix = self.get_confusion_matrix()
-        self.tpr, self.fpr = self.ture_positive_rate()
+        self.tpr, self.fpr = self.get_ture_positive_rate()
         self.accuracy = self.get_accuracy()
         self.precision = self.get_precision()
         self.recall = self.get_recall()
@@ -350,9 +317,9 @@ class Result:
 
         return matrix
 
-    def ture_positive_rate(self):
+    def get_ture_positive_rate(self):
         """
-            this function should be called before call self.calc_metrics()
+            this function should be called by self.calc_metrics()
             get tp, fn, fp, tn
             compute tpr, fpr
 
@@ -371,7 +338,7 @@ class Result:
 
     def get_accuracy(self):
         """
-            this function should be called before call self.calc_metrics()
+            this function should be called by self.calc_metrics()
         Returns:
             accuracy
 
@@ -382,7 +349,7 @@ class Result:
 
     def get_precision(self):
         """
-            this function should be called before call self.calc_metrics()
+            this function should be called by self.calc_metrics()
         Returns:
             precision
 
@@ -393,7 +360,7 @@ class Result:
 
     def get_recall(self):
         """
-            this function should be called before call self.calc_metrics()
+            this function should be called by self.calc_metrics()
         Returns:
             recall
 
@@ -402,11 +369,11 @@ class Result:
         recall = recall_score(y_true=self.y_true, y_pred=self.y_pred, average='macro')
         return recall
 
-    def warning_time_histogram(self, time_bins: List[float], file_path=None):
+    def plot_warning_time_histogram(self, time_bins: List[float], file_path=None):
         """
                 this function should be called before call self.calc_metrics().
                 Plot a column chart, the x-axis is time range,
-            the y-axis is the number of shot less in that time period.
+            the y-axis is the number of shot during that waring time threshold.
         Args:
             file_path:    the path to save .png
             time_bins:    a time endpoint list, unit: s
@@ -443,15 +410,14 @@ class Result:
         if file_path:
             plt.savefig(os.path.join(file_path, 'histogram_warning_time.png'), dpi=300)
 
-    def accumulate_warning_time_plot(self, file_path=None):
+    def plot_accumulate_warning_time(self, file_path=None):
 
         """
                 this function should be called before call self.calc_metrics().
-                Plot a column chart, the x-axis is time range,
-            the y-axis is the number of shot less in that time period.
+                Plot a line chart, the x-axis is time range,
+            the y-axis is the percentage of number of shot during that waring time period.
         Args:
             file_path:    the path to save .png
-            true_dis_num:    the number of true_disruptive
 
         """
 
