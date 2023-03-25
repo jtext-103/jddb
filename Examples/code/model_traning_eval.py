@@ -4,6 +4,8 @@
 # this depands on the output FileRepo of basic_data_processing.py
 
 # %%
+import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import lightgbm as lgb
 import pandas as pd
@@ -60,7 +62,7 @@ def get_shot_result(y_red, threshold_sample):
 if __name__ == '__main__':
     # init FileRepo and MetaDB
     # %%
-    test_file_repo = FileRepo(os.path.join(r'H:\rt\jddb\jddb\Examples\FileRepo', "$shot_2$00", "$shot_1$0"))
+    test_file_repo = FileRepo("..//FileRepo//ProcessedShots//$shot_2$XX//$shot_1$X//")
     test_shot_list = test_file_repo.get_all_shots()
     tag_list = test_file_repo.get_tag_list(test_shot_list[0])
     is_disrupt = []
@@ -116,7 +118,7 @@ if __name__ == '__main__':
     # save sample result to a dict, so when predicting shot with differnet trgging logic,
     # you don't have to re-infor the testshot
     # 改一下注释
-    test_result = Result(r'..\test\test_result.xlsx')
+    test_result = Result(r'..\_temp_test\test_result.csv')
     sample_result = dict()
     shot_nos=test_shots  # shot list
     shots_pred_disrurption=[]  # shot predict result
@@ -131,40 +133,46 @@ if __name__ == '__main__':
         shots_pred_disrurption.append(predicted_disruption)
         shots_pred_disruption_time.append(predicted_disruption_time)
     test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
-    # test_result.get_all_truth(shot_nos)  # get true disruption label and time
-    # test_result.lucky_guess_threshold = .1
-    # test_result.tardy_alarm_threshold = .005
-    # test_result.calc_metrics()
-    # test_result.save()
-    # print("precision = " + str(test_result.get_precision()))
-    # print("tpr = " + str(test_result.ture_positive_rate()))
-    # test_result.confusion_matrix()
-    # test_result.warning_time_histogram('../test/', [-1,.002,.01,.05,.1,.3])
-    # test_result.accumulate_warning_time_plot('../test/')
-    #
-    # # simply chage different disruptivity triggering level and logic, get many result.
-    # test_report = Report('../test/report.csv')
-    # thresholds = np.linspace(0, 1, 50)
-    # for threshold in thresholds:
-    #     # %% evaluation
-    #     shot_nos = test_shots
-    #     shots_pred_disrurption = []
-    #     shots_pred_disruption_time = []
-    #     for shot in test_shots:
-    #         y_pred = sample_result[shot][0]
-    #         predicted_disruption, predicted_disruption_time = get_shot_result(y_pred, threshold)
-    #         shots_pred_disrurption.append(predicted_disruption)
-    #         shots_pred_disruption_time.append(predicted_disruption_time)
-    #     # i dont save so the file never get created
-    #     temp_test_result=Result('../test/temp_result.csv')
-    #     temp_test_result.lucky_guess_threshold = .1
-    #     temp_test_result.tardy_alarm_threshold = .005
-    #     temp_test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
-    #     temp_test_result.get_all_truth(shot_nos)
-    #
-    #     # add result to the report
-    #     test_report.add(temp_test_result, "thr="+str(threshold))
-    #
-    #
-    # # plot all metrics with roc
-    # test_report.plot_roc(../test/)
+    test_result.get_all_truth_from_file_repo(test_file_repo)  # get true disruption label and time
+    test_result.lucky_guess_threshold = .3
+    test_result.tardy_alarm_threshold = .005
+    test_result.calc_metrics()
+    test_result.save()
+    print("precision = " + str(test_result.precision))
+    print("tpr = " + str(test_result.tpr))
+    sns.heatmap(test_result.confusion_matrix,annot=True, cmap="Blues")
+    plt.xlabel("Predicted labels")
+    plt.ylabel("True labels")
+    plt.title("Confusion Matrix")
+    plt.show()
+
+    test_result.warning_time_histogram([-1,.002,.01,.05,.1,.3], '../_temp_test/')
+    test_result.accumulate_warning_time_plot('../_temp_test/')
+
+    # simply chage different disruptivity triggering level and logic, get many result.
+    test_report = Report('../_temp_test/report.csv')
+    thresholds = np.linspace(0, 1, 50)
+    for threshold in thresholds:
+        # %% evaluation
+        shot_nos = test_shots
+        shots_pred_disrurption = []
+        shots_pred_disruption_time = []
+        for shot in test_shots:
+            y_pred = sample_result[shot][0]
+            predicted_disruption, predicted_disruption_time = get_shot_result(y_pred, threshold)
+            shots_pred_disrurption.append(predicted_disruption)
+            shots_pred_disruption_time.append(predicted_disruption_time)
+        # i dont save so the file never get created
+        temp_test_result=Result('../_temp_test/temp_result.csv')
+        temp_test_result.lucky_guess_threshold = .8
+        temp_test_result.tardy_alarm_threshold = .001
+        # temp_test_result.ignore_thresholds = True
+        temp_test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
+        temp_test_result.get_all_truth_from_file_repo(test_file_repo)
+
+        # add result to the report
+        test_report.add(temp_test_result, "thr="+str(threshold))
+
+
+    # plot all metrics with roc
+    test_report.plot_roc('../_temp_test/')
