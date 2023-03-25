@@ -414,12 +414,11 @@ class Result:
         """
 
         # matplotlib.use('TkAgg')
-        plt.figure(dpi=300, figsize=(24, 8))
         plt.rcParams['font.family'] = 'Arial'
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
         warning_time_list = []
-        shot_list = self.get_all_shots(include_all=True)
+        shot_list = self.get_all_shots(include_all=False)
         for i in range(len(shot_list)):
             if self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0] != -1:
                 warning_time_list.append(
@@ -460,13 +459,16 @@ class Result:
         plt.rcParams['font.size'] = 20
         plt.rcParams['font.weight'] = 'bold'
         warning_time_list = []
-        shot_list = self.get_all_shots(include_all=True)
-        true_dis_num = len(shot_list)
+        shot_list = self.get_all_shots(include_all=False)
         for i in range(len(shot_list)):
             if self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0] != -1:
                 warning_time_list.append(
                     self.result.loc[self.result[self.SHOT_NO_H] == shot_list[i], self.WARNING_TIME_H].tolist()[0])
-        warning_time = np.array(warning_time_list)  # ms->s
+
+        fn = int(self.confusion_matrix[1][0])
+        tp = int(self.confusion_matrix[1][1])
+        true_dis_num = fn + tp
+        warning_time = np.array(warning_time_list)  # ->s
         warning_time.sort()
         accu_frac = list()
         for i in range(len(warning_time)):
