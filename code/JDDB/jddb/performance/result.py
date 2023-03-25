@@ -173,12 +173,11 @@ class Result:
         """
                 giving model_name to remove the specified row
         Args:
-            shot_list: a list of shot number
+            shot_list: a list of shot number to remove the corresponding row
         """
-
-        shot_list = self.check_unexisted(shot_list)
         for i in range(len(shot_list)):
-            self.result = self.result.drop(self.result[self.result[self.SHOT_NO_H] == shot_list[i]].index)
+            if shot_list[i] in self.result[self.SHOT_NO_H].tolist():
+                self.result = self.result.drop(self.result[self.result[self.SHOT_NO_H] == shot_list[i]].index)
 
     def get_all_shots(self, include_all=True):
         """
@@ -463,6 +462,3 @@ class Result:
         ax.tick_params(which='minor', length=minor_tick_length)
         if file_path:
             plt.savefig(os.path.join(file_path, 'accumulate_warning_time.png'), dpi=300)
-
-
-

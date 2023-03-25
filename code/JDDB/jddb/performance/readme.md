@@ -65,7 +65,8 @@ Methods:
     * `predicted_disruption_time`:predicted disruption time of shots with the unit seconds, `List[float]`. 
     The index of predicted_disruption corresponds to shot_list.
 
-
+      
+      
 * `remove`
 
       remove(
@@ -76,7 +77,7 @@ Methods:
     There are no changes to the table if the shot number doesn't exist.
     
     Args:
-    * `shot_list`: shot number of shots to be removed , `List[int]`.
+    * `shot_list`: a list of shot number to remove the corresponding row, `List[int]`.
 
 
 * `get_all_truth_from_metadb`
@@ -90,7 +91,7 @@ Methods:
     and if there are no duplicate shot numbers, it will be added to the last row of the table.
     
     Args:
-    * `meta_db` is a initialized a class `MetaDB` from the module `meta_db.py`.
+    * `meta_db`: a initialized a class `MetaDB` from the module `meta_db.py`.
 
 
 * `get_all_truth_from_file_repo`
@@ -105,7 +106,7 @@ Methods:
     
     Args:
     
-    * `file_repo` is a initialized a class `FileRepo` from the module `file_repo.py`.
+    * `file_repo`: a initialized a class `FileRepo` from the module `file_repo.py`.
 
 
 * `get_all_shots`
@@ -117,7 +118,7 @@ Methods:
     get all shot_list 
 
     Args:
-    * `include_all` is to choose whether to include raw that without actual information,
+    * `include_all`: to choose whether to include raw that without actual information,
 
     Returns:
     * `shot_list`: a list of shot number.
@@ -250,8 +251,8 @@ Methods:
     Plot a column chart, the x-axis is time range, the y-axis is the number of shot during that waring time threshold.
 
     Args:
-    *  `time_bins` the end point of time range in x-axis, List[float].
-    *  `file_path` is the path to save the picture, if file_path=None, just show in memory.
+    *  `time_bins`: the end point of time range in x-axis, List[float].
+    *  `file_path`: the path to save the picture, if file_path=None, just show in memory.
 
       
 * `plot_accumulate_warning_time`
@@ -265,7 +266,7 @@ Methods:
     the total number of shot equals to false positive number plus true positive number
 
     Args:
-    * `file_path` is the path to save the picture, if file_path=None, just show in memory.
+    * `file_path`: the path to save the picture, if file_path=None, just show in memory.
 
 
 Example:
@@ -299,10 +300,10 @@ Arguments:
 
 Properties:
 
-* `MODEL_NAME`, `ACCURACY`, `PRECISION`, `RECALL`,`FPR`, `TPR`, `TP`, `FN`, `FP`, `TN` are elements of the header of a dataframe.
-* `csv_path`is the csv file path incoming to the instantiated Report.
-* `report` is a dataframe read from csv_path.
-* `header` is the header of the property `report`.
+* `MODEL_NAME`, `ACCURACY`, `PRECISION`, `RECALL`,`FPR`, `TPR`, `TP`, `FN`, `FP`, `TN` : elements of the header of a dataframe.
+* `csv_path`: the csv file path incoming to the instantiated Report.
+* `report` : a dataframe read from csv_path.
+* `header`: the header of the property `report`.
 
 
 Methods:
@@ -332,8 +333,8 @@ Methods:
     and if there are no duplicate model, it will be added to the last row of the table.
     
     Args:
-    * `model_name` is a list of name of model(s) to be added, `List[int]`.
-    * `result` is an initialized `Result`, a class from the module `result.py`
+    * `model_name`:  a list of name of model(s) to be added, `List[int]`.
+    * `result`: an initialized `Result`, a class from the module `result.py`.
 
   
 * `remove`
@@ -358,7 +359,7 @@ Methods:
     Plot a roc curve, the x-axis is false positive rate, the y-axis is true positive rate.
 
     Args:
-    * `roc_file_path`: is the path to save the picture, if file_path=None, just show in memory.
+    * `roc_file_path`: the path to save the picture, if file_path=None, just show in memory.
 
 
 Example:
