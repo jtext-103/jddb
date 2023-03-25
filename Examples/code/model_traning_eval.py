@@ -4,6 +4,8 @@
 # this depands on the output FileRepo of basic_data_processing.py
 
 # %%
+import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 import lightgbm as lgb
 import pandas as pd
@@ -131,15 +133,19 @@ if __name__ == '__main__':
         shots_pred_disrurption.append(predicted_disruption)
         shots_pred_disruption_time.append(predicted_disruption_time)
     test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
-    test_result.get_all_from_file_repo(test_file_repo)  # get true disruption label and time
+    test_result.get_all_truth_from_file_repo(test_file_repo)  # get true disruption label and time
     test_result.lucky_guess_threshold = .3
     test_result.tardy_alarm_threshold = .005
     test_result.calc_metrics()
-    test_result.ture_positive_rate()
     test_result.save()
-    print("precision = " + str(test_result.get_precision()))
-    print("tpr = " + str(test_result.ture_positive_rate()))
-    test_result.confusion_matrix()
+    print("precision = " + str(test_result.precision))
+    print("tpr = " + str(test_result.tpr))
+    sns.heatmap(test_result.confusion_matrix,annot=True, cmap="Blues")
+    plt.xlabel("Predicted labels")
+    plt.ylabel("True labels")
+    plt.title("Confusion Matrix")
+    plt.show()
+
     test_result.warning_time_histogram([-1,.002,.01,.05,.1,.3], '../_temp_test/')
     test_result.accumulate_warning_time_plot('../_temp_test/')
 
@@ -162,11 +168,11 @@ if __name__ == '__main__':
         temp_test_result.tardy_alarm_threshold = .001
         # temp_test_result.ignore_thresholds = True
         temp_test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
-        temp_test_result.get_all_from_file_repo(test_file_repo)
+        temp_test_result.get_all_truth_from_file_repo(test_file_repo)
 
         # add result to the report
         test_report.add(temp_test_result, "thr="+str(threshold))
 
 
     # plot all metrics with roc
-    test_report.roc('../_temp_test/')
+    test_report.plot_roc('../_temp_test/')
