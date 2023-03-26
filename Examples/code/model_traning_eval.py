@@ -49,7 +49,7 @@ def get_shot_result(y_red, threshold_sample):
     """
     binary_result = 1 * (y_pred >= threshold_sample)
     for k in range(len(binary_result) - 2):
-        if binary_result[k] + binary_result[k + 1] + binary_result[k + 2] == 3:
+        if np.sum(binary_result[k:k+3]) == 3:
             predicted_dis_time = (k + 2) / 1000
             predicted_dis = 1
             break
@@ -62,7 +62,7 @@ def get_shot_result(y_red, threshold_sample):
 if __name__ == '__main__':
     # init FileRepo and MetaDB
     # %%
-    test_file_repo = FileRepo("..//FileRepo//ProcessedShots//$shot_2$XX//$shot_1$X//")
+    test_file_repo = FileRepo("..//FileRepo//ProcessedShots//$shot_2$00//$shot_1$0//")
     test_shot_list = test_file_repo.get_all_shots()
     tag_list = test_file_repo.get_tag_list(test_shot_list[0])
     is_disrupt = []
@@ -146,8 +146,8 @@ if __name__ == '__main__':
     plt.title("Confusion Matrix")
     plt.show()
 
-    test_result.warning_time_histogram([-1,.002,.01,.05,.1,.3], '../_temp_test/')
-    test_result.accumulate_warning_time_plot('../_temp_test/')
+    test_result.plot_warning_time_histogram([-1,.002,.01,.05,.1,.3], '../_temp_test/')
+    test_result.plot_accumulate_warning_time('../_temp_test/')
 
     # simply chage different disruptivity triggering level and logic, get many result.
     test_report = Report('../_temp_test/report.csv')
@@ -172,7 +172,6 @@ if __name__ == '__main__':
 
         # add result to the report
         test_report.add(temp_test_result, "thr="+str(threshold))
-
 
     # plot all metrics with roc
     test_report.plot_roc('../_temp_test/')
