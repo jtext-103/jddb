@@ -402,7 +402,7 @@ class Result:
             width=0.2,
             align="center",
             color="cornflowerblue",
-            edgecolor="dark-blue",
+            edgecolor="darkblue",
             linewidth=2.0
         )
         ax.set_title("warning_time_histogram", fontsize=15)
