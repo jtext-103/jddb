@@ -401,7 +401,7 @@ class Result:
             height=counts,
             width=0.2,
             align="center",
-            color="cornflower blue",
+            color="cornflowerblue",
             edgecolor="dark-blue",
             linewidth=2.0
         )
