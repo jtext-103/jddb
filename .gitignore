@@ -23,4 +23,5 @@ env/
 *.log
 
 *.hdf5
+_temp*/
 
