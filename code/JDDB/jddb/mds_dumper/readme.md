@@ -34,12 +34,11 @@ YOU MUST install **`MDSplus`** package FIRST
   Example:
   ```python
   from jddb.file_repo import FileRepo
-  from jddb.file_repo import MDSDumper
+  from jddb.mds_dumper import MDSDumper
   base_path = "\\data\\jtext\\$shot_2$XX\\$shot_1$XX\\"
   file_repo = FileRepo(base_path)
   shot_list = [1050000, 1050001]
   tag_list = ['\\ip', '\\bt']
-  file_repo.get_files(shot_list, True)
   dump = MDSDumper('1.1.1.1', 'jtext')
   dump.dumper(file_repo, shot_list, tag_list) 
   ```

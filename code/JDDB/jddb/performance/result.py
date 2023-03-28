@@ -401,8 +401,8 @@ class Result:
             height=counts,
             width=0.2,
             align="center",
-            color="cornflower blue",
-            edgecolor="dark-blue",
+            color="cornflowerblue",
+            edgecolor="darkblue",
             linewidth=2.0
         )
         ax.set_title("warning_time_histogram", fontsize=15)

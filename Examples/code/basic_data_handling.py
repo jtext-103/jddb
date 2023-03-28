@@ -29,7 +29,7 @@ complete_disruption_shots = db.query_valid(
 print(complete_disruption_shots)
 print(len(complete_disruption_shots))
 # %%
-# find all the shot with IP>200kA, 0.45s<Tcq<0.5s  && is disruption && with those diagnostis [ip, bt] available
+# find all the shot with IP>160kA, 0.45s<Tcq<0.5s  && is disruption && with those diagnostis [ip, bt] available
 ip_range = [160, None]
 tcq_range = [0.45, 0.5]
 chosen_shots = db.query_range(
