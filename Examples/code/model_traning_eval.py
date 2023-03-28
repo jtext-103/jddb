@@ -15,6 +15,8 @@ from jddb.performance import Result
 from jddb.performance import Report
 from jddb.file_repo import FileRepo
 
+# %% define function to build model specific data
+
 
 def matrix_build(shot_list, file_repo, tags):
     """
@@ -35,6 +37,8 @@ def matrix_build(shot_list, file_repo, tags):
         x_set = np.append(x_set, np.delete(res, 3, 1), axis=0)
         y_set = np.append(y_set, res[:, 3], axis=0)
     return x_set, y_set
+
+# inference on shot
 
 
 def get_shot_result(y_red, threshold_sample):
@@ -73,7 +77,8 @@ if __name__ == '__main__':
 
     # train test split on shot not sample according to whether shots are disruption
     # set test_size=0.5 to get 50% shots as test set
-    # %%
+
+    # %% build model specific data
     train_shots, test_shots, _, _ = \
         train_test_split(test_shot_list, is_disrupt, test_size=0.5,
                          random_state=1, shuffle=True, stratify=is_disrupt)
@@ -84,8 +89,7 @@ if __name__ == '__main__':
     X_test, y_test = matrix_build(test_shots, test_file_repo, tag_list)
     lgb_train = lgb.Dataset(X_train, y_train)  # create dataset for LightGBM
 
-    # use LightGBM to train a model.
-    # %%
+    # %% use LightGBM to train a model.
     # hyper-parameters
     params = {
         'boosting_type': 'gbdt',
@@ -117,11 +121,15 @@ if __name__ == '__main__':
                     evals_result=evals_result,
                     early_stopping_rounds=30)
 
+    # %% generate result and evaluate
     # save sample result to a dict, so when predicting shot with differnet trgging logic,
     # you don't have to re-infor the testshot
-    # 改一下注释
+
+    # create an empty result object
     test_result = Result(r'.\_temp_test\test_result.csv')
     sample_result = dict()
+
+    # generate predictions for each shot
     shot_nos = test_shots  # shot list
     shots_pred_disrurption = []  # shot predict result
     shots_pred_disruption_time = []  # shot predict time
@@ -137,16 +145,22 @@ if __name__ == '__main__':
             y_pred, .5)  # get shot result with a threshold
         shots_pred_disrurption.append(predicted_disruption)
         shots_pred_disruption_time.append(predicted_disruption_time)
+
+    # add predictions for each shot to the result object
     test_result.add(shot_nos, shots_pred_disrurption,
                     shots_pred_disruption_time)
+    # get true disruption label and time
     test_result.get_all_truth_from_file_repo(
-        test_file_repo)  # get true disruption label and time
+        test_file_repo)
+
     test_result.lucky_guess_threshold = .3
     test_result.tardy_alarm_threshold = .005
     test_result.calc_metrics()
     test_result.save()
     print("precision = " + str(test_result.precision))
     print("tpr = " + str(test_result.tpr))
+
+    # %% plot some of the result
     sns.heatmap(test_result.confusion_matrix, annot=True, cmap="Blues")
     plt.xlabel("Predicted labels")
     plt.ylabel("True labels")
@@ -154,14 +168,14 @@ if __name__ == '__main__':
     plt.show()
 
     test_result.plot_warning_time_histogram(
-        [-1, .002, .01, .05, .1, .3], '../_temp_test/')
-    test_result.plot_accumulate_warning_time('../_temp_test/')
+        [-1, .002, .01, .05, .1, .3], './/_temp_test//')
+    test_result.plot_accumulate_warning_time('.//_temp_test//')
 
+    # %% scan the threshold for shot prediction to get
+    # many results, and add them to a report
     # simply chage different disruptivity triggering level and logic, get many result.
-    test_report = Report('../_temp_test/report.csv')
+    test_report = Report('.//_temp_test//report.csv')
     thresholds = np.linspace(0, 1, 50)
-
-    # %% evaluation
     for threshold in thresholds:
         shot_nos = test_shots
         shots_pred_disrurption = []
@@ -173,7 +187,7 @@ if __name__ == '__main__':
             shots_pred_disrurption.append(predicted_disruption)
             shots_pred_disruption_time.append(predicted_disruption_time)
         # i dont save so the file never get created
-        temp_test_result = Result('../_temp_test/temp_result.csv')
+        temp_test_result = Result('./_temp_test/temp_result.csv')
         temp_test_result.lucky_guess_threshold = .8
         temp_test_result.tardy_alarm_threshold = .001
         # temp_test_result.ignore_thresholds = True
@@ -183,6 +197,6 @@ if __name__ == '__main__':
 
         # add result to the report
         test_report.add(temp_test_result, "thr="+str(threshold))
-
+        test_report.save()
     # plot all metrics with roc
-    test_report.plot_roc('../_temp_test/')
+    test_report.plot_roc('./_temp_test/')

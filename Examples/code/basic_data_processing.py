@@ -77,7 +77,7 @@ def find_tags(prefix, all_tags):
     return list(filter(lambda tag: tag.encode("utf-8").decode("utf-8", "ignore")[0:len(prefix)] == prefix, all_tags))
 
 
-# %%
+# %% get source and processed filerepo ready
 if __name__ == '__main__':
     # read mean and std for normalization
     config_mean = read_config("config_mean.json")
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     # below are steps to extract features
 
     # %%
-    # 1.slice MA
+    # 1.slicing
     # generate a new signal with is moving window slices of a source signal
     # it is for FFT processors
     processed_shotset = source_shotset.process(
@@ -125,6 +125,7 @@ if __name__ == '__main__':
                                                   save_repo=processed_file_repo)
     # average soft s-ray
     sxr = find_tags("\\sxr_c", all_tags)
+
     processed_shotset = processed_shotset.process(processor=Mean(),
                                                   input_tags=[sxr],
                                                   output_tags=["\\sxr_c_mean"],
