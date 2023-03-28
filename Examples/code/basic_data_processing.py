@@ -62,7 +62,7 @@ image_path = "..//FileRepo//_temp_image//"
 
 
 def read_config(file_name: str):
-    """"读取配置"""
+    """"read config files"""
     with open(file_name, 'r', encoding='UTF-8') as f:
         config = json.load(f)
     return config
