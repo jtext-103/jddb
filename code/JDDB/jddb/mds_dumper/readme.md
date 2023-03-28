@@ -39,7 +39,6 @@ YOU MUST install **`MDSplus`** package FIRST
   file_repo = FileRepo(base_path)
   shot_list = [1050000, 1050001]
   tag_list = ['\\ip', '\\bt']
-  file_repo.get_files(shot_list, True)
   dump = MDSDumper('1.1.1.1', 'jtext')
   dump.dumper(file_repo, shot_list, tag_list) 
   ```
