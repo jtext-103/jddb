@@ -7,6 +7,7 @@ from jddb.meta_db import MetaDB
 from jddb.file_repo import FileRepo
 from jddb.processor import Shot
 import numpy as np
+import matplotlib.pyplot as plt
 
 # %% connect to the MetaDB
 connection_str = {
@@ -42,7 +43,7 @@ print(len(chosen_shots))
 
 # %%
 # sync meta_db label to shot files in file repo
-file_repo = FileRepo(r"..//FileRepo//$shot_2$xx//$shot_1$x//")
+file_repo = FileRepo(r"..//FileRepo//TestShots//$shot_2$xx//$shot_1$x//")
 file_repo.sync_meta(db)
 shot = file_repo.get_all_shots()[0]
 print(file_repo.read_labels(shot))
@@ -61,14 +62,15 @@ sr = attributes["SampleRate"]
 stop = start + len(data) / sr
 time_axis = np.linspace(start, stop, num=len(data), endpoint=True)
 
-# plot
-# plt.figure()
-# plt.plot(time_axis, data)
-# plt.show()
+plt.figure()
+plt.plot(time_axis, data)
+plt.show()
 
-# an alternative way to read a shot
+# %%
+# an alternative way to read a shot using processing package
+# create a shot object
 example_shot = Shot(shot, file_repo)
-# get a signal instance from a shot instance
+# get a signal object from a shot object
 ip = example_shot.get('\\ip')
 # an alternative way to plot with signal
 plt.plot(ip.time, ip.data)

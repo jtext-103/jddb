@@ -59,10 +59,11 @@ def get_shot_result(y_red, threshold_sample):
     return predicted_dis, predicted_dis_time
 
 
+# %% init FileRepo and MetaDB
 if __name__ == '__main__':
-    # init FileRepo and MetaDB
-    # %%
-    test_file_repo = FileRepo("..//FileRepo//ProcessedShots//$shot_2$XX//$shot_1$X//")
+
+    test_file_repo = FileRepo(
+        "..//FileRepo//ProcessedShots//$shot_2$XX//$shot_1$X//")
     test_shot_list = test_file_repo.get_all_shots()
     tag_list = test_file_repo.get_tag_list(test_shot_list[0])
     is_disrupt = []
@@ -74,7 +75,8 @@ if __name__ == '__main__':
     # set test_size=0.5 to get 50% shots as test set
     # %%
     train_shots, test_shots, _, _ = \
-        train_test_split(test_shot_list, is_disrupt, test_size=0.5, random_state=1, shuffle=True, stratify=is_disrupt)
+        train_test_split(test_shot_list, is_disrupt, test_size=0.5,
+                         random_state=1, shuffle=True, stratify=is_disrupt)
 
     # # create x and y matrix for ML models
     # # %%
@@ -84,7 +86,7 @@ if __name__ == '__main__':
 
     # use LightGBM to train a model.
     # %%
-    #hyper-parameters
+    # hyper-parameters
     params = {
         'boosting_type': 'gbdt',
         'objective': 'binary',
@@ -118,56 +120,65 @@ if __name__ == '__main__':
     # save sample result to a dict, so when predicting shot with differnet trgging logic,
     # you don't have to re-infor the testshot
     # 改一下注释
-    test_result = Result(r'..\_temp_test\test_result.csv')
+    test_result = Result(r'.\_temp_test\test_result.csv')
     sample_result = dict()
-    shot_nos=test_shots  # shot list
-    shots_pred_disrurption=[]  # shot predict result
-    shots_pred_disruption_time=[]  # shot predict time
+    shot_nos = test_shots  # shot list
+    shots_pred_disrurption = []  # shot predict result
+    shots_pred_disruption_time = []  # shot predict time
     for shot in test_shots:
         X, _ = matrix_build([shot], test_file_repo, tag_list)
-        y_pred = gbm.predict(X, num_iteration=gbm.best_iteration)  # get sample result from LightGBM
-        sample_result.setdefault(shot, []).append(y_pred)  # save sample results to a dict
+        # get sample result from LightGBM
+        y_pred = gbm.predict(X, num_iteration=gbm.best_iteration)
+        sample_result.setdefault(shot, []).append(
+            y_pred)  # save sample results to a dict
 
     # using the sample reulst to predict disruption on shot, and save result to result file using result module.
-        predicted_disruption, predicted_disruption_time = get_shot_result(y_pred, .5)  # get shot result with a threshold
+        predicted_disruption, predicted_disruption_time = get_shot_result(
+            y_pred, .5)  # get shot result with a threshold
         shots_pred_disrurption.append(predicted_disruption)
         shots_pred_disruption_time.append(predicted_disruption_time)
-    test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
-    test_result.get_all_truth_from_file_repo(test_file_repo)  # get true disruption label and time
+    test_result.add(shot_nos, shots_pred_disrurption,
+                    shots_pred_disruption_time)
+    test_result.get_all_truth_from_file_repo(
+        test_file_repo)  # get true disruption label and time
     test_result.lucky_guess_threshold = .3
     test_result.tardy_alarm_threshold = .005
     test_result.calc_metrics()
     test_result.save()
     print("precision = " + str(test_result.precision))
     print("tpr = " + str(test_result.tpr))
-    sns.heatmap(test_result.confusion_matrix,annot=True, cmap="Blues")
+    sns.heatmap(test_result.confusion_matrix, annot=True, cmap="Blues")
     plt.xlabel("Predicted labels")
     plt.ylabel("True labels")
     plt.title("Confusion Matrix")
     plt.show()
 
-    test_result.plot_warning_time_histogram([-1,.002,.01,.05,.1,.3], '../_temp_test/')
+    test_result.plot_warning_time_histogram(
+        [-1, .002, .01, .05, .1, .3], '../_temp_test/')
     test_result.plot_accumulate_warning_time('../_temp_test/')
 
     # simply chage different disruptivity triggering level and logic, get many result.
     test_report = Report('../_temp_test/report.csv')
     thresholds = np.linspace(0, 1, 50)
+
+    # %% evaluation
     for threshold in thresholds:
-        # %% evaluation
         shot_nos = test_shots
         shots_pred_disrurption = []
         shots_pred_disruption_time = []
         for shot in test_shots:
             y_pred = sample_result[shot][0]
-            predicted_disruption, predicted_disruption_time = get_shot_result(y_pred, threshold)
+            predicted_disruption, predicted_disruption_time = get_shot_result(
+                y_pred, threshold)
             shots_pred_disrurption.append(predicted_disruption)
             shots_pred_disruption_time.append(predicted_disruption_time)
         # i dont save so the file never get created
-        temp_test_result=Result('../_temp_test/temp_result.csv')
+        temp_test_result = Result('../_temp_test/temp_result.csv')
         temp_test_result.lucky_guess_threshold = .8
         temp_test_result.tardy_alarm_threshold = .001
         # temp_test_result.ignore_thresholds = True
-        temp_test_result.add(shot_nos, shots_pred_disrurption, shots_pred_disruption_time)
+        temp_test_result.add(shot_nos, shots_pred_disrurption,
+                             shots_pred_disruption_time)
         temp_test_result.get_all_truth_from_file_repo(test_file_repo)
 
         # add result to the report
