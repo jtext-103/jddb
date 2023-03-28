@@ -65,7 +65,7 @@ class MDSDumper:
                 attribute_dict = dict()
                 attribute_dict[sample_rate_attr] = fs
                 attribute_dict[start_time_attr] = st
-                file_repo.write_data(shot, data_dict_temp, overwrite)
+                file_repo.write_data(shot, data_dict_temp, overwrite, create_empty=True)
                 file_repo.write_attributes(shot, tag, attribute_dict, overwrite)
                 del attribute_dict
                 del data_dict_temp
