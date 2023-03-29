@@ -231,11 +231,13 @@ The base folder should use $shot_x$ for template.
   data_dict = {'\\ip': np.random.randn(1000), '\\bt': np.random.randn(1000)}
   file_repo.write_data_file(file_path, data_dict)
   ```
-- **`write_data(shot_no, data_dict, overwrite=False)`**
+- **`write_data(shot_no, data_dict, overwrite=False, create_empty=True)`**
 
   Write a data dictionary in the data group in one shot file with a shot number as input, return None.
   
   - `overwrite` controls if the input data will overwrite the original data.
+  
+  - `create_empty` controls if you would like to create a new shot file.
   
   Example:
   ```python

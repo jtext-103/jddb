@@ -12,6 +12,7 @@ class FileRepo:
     base path contains template same as BM design. i.e. "\\data\\jtext\\$shot_2$XX\\$shot_1$XX\\"
 
     """
+
     def __init__(self, base_path: str):
         self._base_path = base_path
         self._data_group_name = 'data'
@@ -109,7 +110,6 @@ class FileRepo:
             return file_path
         except OSError:
             return ""
-
 
     def get_files(self, shot_list: List[int] = None, create_empty=False) -> dict:
         """
@@ -452,7 +452,7 @@ class FileRepo:
         else:
             raise OSError("Invalid path given.")
 
-    def write_data(self, shot_no: int, data_dict: dict, overwrite=False, create_empty=False):
+    def write_data(self, shot_no: int, data_dict: dict, overwrite=False, create_empty=True):
         """
 
         Write a data dictionary in the data group in one shot file with a shot number as input.
@@ -580,4 +580,3 @@ class FileRepo:
             label_dict = meta_db.get_labels(shot)
             del label_dict['shot']
             self.write_label(shot, label_dict, overwrite)
-

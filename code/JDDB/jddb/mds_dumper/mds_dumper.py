@@ -53,7 +53,7 @@ class MDSDumper:
             except ConnectionError("Could not open the tree of shot {}".format(shot)):
                 raise ConnectionError
             file_path = file_repo.create_shot(shot)
-            if file_path is not None:
+            if file_path is not "":
                 exist_tag_list = file_repo.get_tag_list(shot)
                 for tag in tag_list:
                     if tag not in exist_tag_list or overwrite:
@@ -70,7 +70,7 @@ class MDSDumper:
                         attribute_dict = dict()
                         attribute_dict[sample_rate_attr] = fs
                         attribute_dict[start_time_attr] = st
-                        file_repo.write_data(shot, data_dict_temp, overwrite)
+                        file_repo.write_data(shot, data_dict_temp, overwrite, create_empty=False)
                         file_repo.write_attributes(shot, tag, attribute_dict, overwrite)
                         del attribute_dict
                         del data_dict_temp
