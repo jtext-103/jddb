@@ -70,8 +70,10 @@ def read_config(file_name: str):
 
 def find_tags(prefix, all_tags):
     """
-        return tags that start with the prefix
-    :param string: "string"
+        find tags that start with the prefix
+    param:
+        prefix: The first few strings of the tags users need to look for
+        all_tags: a list of all the tags that needed to be filtered
     :return: matching tags as a list[sting]
     """
     return list(filter(lambda tag: tag.encode("utf-8").decode("utf-8", "ignore")[0:len(prefix)] == prefix, all_tags))
