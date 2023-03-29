@@ -189,9 +189,9 @@ if __name__ == '__main__':
     # p1 ip
     # p2 fft
     shot_plt = processed_shotset.get_shot(shot_list[5])
-    signal_ip = shot_plt.get("\\ip")  # p1
-    signal_MA_amp = shot_plt.get("\\fft_amp")  # p2
-    signal_MA_fre = shot_plt.get("\\fft_fre")  # p2
+    signal_ip = shot_plt.get_signal("\\ip")  # p1
+    signal_MA_amp = shot_plt.get_signal("\\fft_amp")  # p2
+    signal_MA_fre = shot_plt.get_signal("\\fft_fre")  # p2
     end_time = signal_MA_amp.time[-1]
 
     # save the plot
