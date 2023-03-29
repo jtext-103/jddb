@@ -149,12 +149,13 @@ class FileRepo:
         file = self._open_file(self.get_file(shot_no))
         if file:
             if file.get(self._data_group_name) is None:
-                raise KeyError("Group \"" + self._data_group_name + "\" does not exist.")
+                warnings.warn("Group \"" + self._data_group_name + "\" does not exist.", category=UserWarning)
+                return list()
+            elif len(file.get(self._data_group_name).keys()) == 0:
+                warnings.warn("There is no tag in group \"" + self._data_group_name + "\".", category=UserWarning)
+                return list()
             else:
-                if len(file.get(self._data_group_name).keys()) == 0:
-                    file.close()
-                    return list()
-            tag_list = list(file.get(self._data_group_name).keys())
+                tag_list = list(file.get(self._data_group_name).keys())
             file.close()
             return tag_list
         else:
