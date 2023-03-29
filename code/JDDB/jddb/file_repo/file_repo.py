@@ -80,6 +80,14 @@ class FileRepo:
                     all_shot_list.append(shot_no)
         return all_shot_list
 
+    @staticmethod
+    def _open_file(file_path: str, mode='r'):
+        try:
+            hdf5_file = h5py.File(file_path, mode)
+            return hdf5_file
+        except OSError:
+            return None
+
     def create_shot(self, shot_no: int) -> str:
         """
 
@@ -96,11 +104,12 @@ class FileRepo:
         if not os.path.exists(parent_dir):
             os.makedirs(parent_dir)
         try:
-            file = h5py.File(file_path, 'x')
-            file.close()
+            hdf5_file = h5py.File(file_path, 'r+')
+            hdf5_file.close()
+            return file_path
         except OSError:
-            raise OSError("Shot {} already exists.".format(shot_no))
-        return file_path
+            return ""
+
 
     def get_files(self, shot_list: List[int] = None, create_empty=False) -> dict:
         """
@@ -124,14 +133,6 @@ class FileRepo:
                 each_path = self.create_shot(each_shot)
             file_path_dict[each_shot] = each_path
         return file_path_dict
-
-    @staticmethod
-    def _open_file(file_path: str, mode='r'):
-        try:
-            hdf5_file = h5py.File(file_path, mode)
-            return hdf5_file
-        except OSError:
-            return None
 
     def get_tag_list(self, shot_no: int) -> List[str]:
         """
