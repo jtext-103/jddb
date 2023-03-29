@@ -56,7 +56,8 @@ class MDSDumper:
                 try:
                     data_raw = np.array(self.conn.get(tag))
                     time_raw = np.array(self.conn.get(r'DIM_OF({})'.format(tag)))
-                except ValueError("Could not read data from {}".format(tag)):
+                except ValueError:
+                    warnings.warn("Could not read data from {}".format(tag), category=UserWarning)
                     continue
                 fs = len(time_raw) / (time_raw[-1] - time_raw[0]) if len(time_raw) > 1 else 0
                 st = time_raw[0] if len(time_raw) > 1 else 0
