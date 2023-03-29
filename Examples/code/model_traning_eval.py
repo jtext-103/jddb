@@ -63,7 +63,7 @@ def get_shot_result(y_red, threshold_sample):
     return predicted_dis, predicted_dis_time
 
 
-# %% init FileRepo and MetaDB
+# %% init FileRepo
 if __name__ == '__main__':
 
     test_file_repo = FileRepo(
@@ -75,10 +75,9 @@ if __name__ == '__main__':
         dis_label = test_file_repo.read_labels(threshold, ['IsDisrupt'])
         is_disrupt.append(dis_label['IsDisrupt'])
 
+    # %% build model specific data
     # train test split on shot not sample according to whether shots are disruption
     # set test_size=0.5 to get 50% shots as test set
-
-    # %% build model specific data
     train_shots, test_shots, _, _ = \
         train_test_split(test_shot_list, is_disrupt, test_size=0.5,
                          random_state=1, shuffle=True, stratify=is_disrupt)
@@ -173,7 +172,7 @@ if __name__ == '__main__':
 
     # %% scan the threshold for shot prediction to get
     # many results, and add them to a report
-    # simply chage different disruptivity triggering level and logic, get many result.
+    # simply change different disruptivity triggering level and logic, get many result.
     test_report = Report('.//_temp_test//report.csv')
     thresholds = np.linspace(0, 1, 50)
     for threshold in thresholds:
