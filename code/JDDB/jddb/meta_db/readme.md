@@ -60,7 +60,7 @@
     -Return:
     {'shot': 1066648, 'ip': True, 'IsDisrupt': False, 'DownTime': 0.5923408076837159, 'bt': True, ... 'MA_TOR1_R09': True}
     ```
-- ### **db.updata_labels(shot_no, labels)**
+- ### **db.update_labels(shot_no, labels)**
   **Description:**  
     Update or modify the meta of a shot in MetaDB.  
   **Parameters:**  
@@ -70,7 +70,7 @@
   **Example :**
     ```python
     new_meta = {'ip': True, 'IsDisrupt': False, 'DownTime': 0.59234, ...}
-    db.updata_labels(1066648, new_meta)
+    db.update_labels(1066648, new_meta)
     ```
 
 - ### **db.query(shot_list=None, filter=None)**

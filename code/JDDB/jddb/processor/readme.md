@@ -176,9 +176,9 @@ Attributes:
 
 Methods:
 
-* `update`
+* `update_signal`
 
-      update(
+      update_signal(
         tag: str,
         signal: Signal
       )
@@ -192,9 +192,9 @@ Methods:
   * `signal`：the signal to be added or modified, `Signal`.
 
 
-* `remove`
+* `remove_signal`
 
-      remove(
+      remove_signal(
         tags: Union[str, List[str]],
         keep: bool = False
       )
@@ -210,13 +210,13 @@ Methods:
   Raises:
   * `ValueError`：if any of the signal(s) is not found in the shot.
 
-* `get`
+* `get_signal`
 
-      get(tag: str) -> Signal
+      get_signal(tag: str) -> Signal
   
   Get an existing signal from the shot.
 
-  Data is read from HDF5 file ONLY when `get()` is called. Instantiating a `Shot` object will not read data to RAM.
+  Data is read from HDF5 file ONLY when `get_signal()` is called. Instantiating a `Shot` object will not read data to RAM.
 
   Args:
   * `tag`: name of the signal to be got, `str`.
@@ -311,9 +311,9 @@ Methods:
     Returns:
     * `Shot`: the instance got.
 
-* `remove`
+* `remove_signal`
 
-      remove(
+      remove_signal(
         tags: List[str],
         shot_filter: List[int] = None,
         keep: bool = False,

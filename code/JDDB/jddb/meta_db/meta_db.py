@@ -54,7 +54,7 @@ class MetaDB(object):
         if self.client is not None:
             self.client.close()
 
-    def updata_labels(self, shot_no, labels):
+    def update_labels(self, shot_no, labels):
         """
         Update or modify the meta of a shot in MetaDB.
 

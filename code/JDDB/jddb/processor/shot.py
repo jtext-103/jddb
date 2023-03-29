@@ -40,7 +40,7 @@ class Shot(object):
         """FileRepo: the file repo the shot belongs to. Readonly."""
         return self._file_repo
 
-    def update(self, tag: str, signal: Signal):
+    def update_signal(self, tag: str, signal: Signal):
         """Add a new signal or modify an existing signal to the shot.
 
         The method DOES NOT change any file until save() is called.
@@ -51,7 +51,7 @@ class Shot(object):
         """
         self.__new_signals[tag] = signal
 
-    def remove(self, tags: Union[str, List[str]], keep: bool = False):
+    def remove_signal(self, tags: Union[str, List[str]], keep: bool = False):
         """Remove (or keep) existing signals from the shot.
         The method DOES NOT change any file until save() is called.
 
@@ -77,7 +77,7 @@ class Shot(object):
             if tag in self.__new_signals.keys():
                 del self.__new_signals[tag]
 
-    def get(self, tag: str) -> Signal:
+    def get_signal(self, tag: str) -> Signal:
         """Get an existing signal from the shot.
 
         Args:
@@ -120,18 +120,18 @@ class Shot(object):
 
         for i_tag, o_tag in zip(input_tags, output_tags):
             if isinstance(i_tag, str):
-                new_signal = processor.transform(self.get(i_tag))
+                new_signal = processor.transform(self.get_signal(i_tag))
             else:
-                new_signal = processor.transform(*[self.get(each_tag) for each_tag in i_tag])
+                new_signal = processor.transform(*[self.get_signal(each_tag) for each_tag in i_tag])
 
             if isinstance(o_tag, str) and isinstance(new_signal, Signal):
-                self.update(o_tag, new_signal)
+                self.update_signal(o_tag, new_signal)
 
             elif isinstance(o_tag, list) and isinstance(new_signal, tuple):
                 if len(o_tag) != len(new_signal):
                     raise ValueError("Lengths of output tags and signals do not match!")
                 for idx, each_signal in enumerate(new_signal):
-                    self.update(o_tag[idx], each_signal)
+                    self.update_signal(o_tag[idx], each_signal)
             else:
                 raise ValueError("Lengths of output tags and signals do not match!")
 
@@ -153,11 +153,11 @@ class Shot(object):
                 output_path = save_repo.create_shot(self.shot_no)
             data_dict = dict()
             for tag in self.tags:
-                signal = self.get(tag)
+                signal = self.get_signal(tag)
                 data_dict[tag] = signal.data
             save_repo.write_data_file(output_path, data_dict)
             for tag in self.tags:
-                save_repo.write_attributes(self.shot_no, tag, self.get(tag).attributes)
+                save_repo.write_attributes(self.shot_no, tag, self.get_signal(tag).attributes)
             save_repo.write_label_file(output_path, self.labels)
 
         else:

@@ -71,7 +71,7 @@ plt.show()
 # create a shot object
 example_shot = Shot(shot, file_repo)
 # get a signal object from a shot object
-ip = example_shot.get('\\ip')
+ip = example_shot.get_signal('\\ip')
 # an alternative way to plot with signal
 plt.plot(ip.time, ip.data)
 plt.show()

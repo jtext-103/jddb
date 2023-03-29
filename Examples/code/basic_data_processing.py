@@ -155,8 +155,8 @@ if __name__ == '__main__':
     # %%
     # 7.drop useless raw signals
     exsads = find_tags("\\exsad", all_tags)
-    processed_shotset = processed_shotset.remove(tags=keep_tags + exsads, keep=True,
-                                                 save_repo=processed_file_repo)
+    processed_shotset = processed_shotset.remove_signal(tags=keep_tags + exsads, keep=True,
+                                                        save_repo=processed_file_repo)
     # %%
     # 8.clip ,remove signal out side of the time of interests
     # get the new set of tags, after the processing the tags have changed

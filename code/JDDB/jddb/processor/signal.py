@@ -20,17 +20,17 @@ class Signal(object):
 
         if 'SampleRate' not in self.attributes.keys():
             self.attributes['SampleRate'] = 1
-            warnings.warn("SampleRate not in props. Set to 1.")
+            warnings.warn("SampleRate not in attributes. Set to 1.")
 
         if 'StartTime' not in self.attributes.keys():
             self.attributes['StartTime'] = 0
-            warnings.warn("StartTime not in props. Set to 0.")
+            warnings.warn("StartTime not in attributes. Set to 0.")
 
     @property
     def time(self):
         """
         Returns:
-            numpy.ndarray: time axis of the Signal instance according to SampleRate and StartTime given in the prop_dict.
+            numpy.ndarray: time axis of the Signal instance according to SampleRate and StartTime given in the attributes.
         """
         start_time = self.attributes['StartTime']
         sample_rate = self.attributes['SampleRate']
