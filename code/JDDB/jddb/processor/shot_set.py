@@ -43,7 +43,7 @@ class ShotSet(object):
         """
         return Shot(shot_no, self.file_repo)
 
-    def remove(self, tags: List[str], shot_filter: List[int] = None, keep: bool = False, save_repo: FileRepo = None) -> ShotSet:
+    def remove_signal(self, tags: List[str], shot_filter: List[int] = None, keep: bool = False, save_repo: FileRepo = None) -> ShotSet:
         """Remove (or keep) existing signal(s) from the shots within the shot filter.
 
         The changes removed WILL be saved immediately by calling this method.
@@ -60,7 +60,7 @@ class ShotSet(object):
             shot_filter = self.shot_list
         for each_shot in shot_filter:
             shot = Shot(each_shot, self.file_repo)
-            shot.remove(tags, keep)
+            shot.remove_signal(tags, keep)
             shot.save(save_repo)
         if save_repo is None and shot_filter == self.shot_list:
             return self
