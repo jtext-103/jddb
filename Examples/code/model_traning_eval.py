@@ -20,7 +20,7 @@ from jddb.file_repo import FileRepo
 
 def matrix_build(shot_list, file_repo, tags):
     """
-    get x and y from file_repo with shots and tags
+    get x and y from file_repo by shots and tags
     Args:
         shot_list: shots for data matrix
         file_repo:
@@ -43,7 +43,7 @@ def matrix_build(shot_list, file_repo, tags):
 
 def get_shot_result(y_red, threshold_sample):
     """
-    get shot result with a threshold
+    get shot result by a threshold
     Args:
         y_red: sample result from model
         threshold_sample: disruptive predict level
@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
     # using the sample reulst to predict disruption on shot, and save result to result file using result module.
         predicted_disruption, predicted_disruption_time = get_shot_result(
-            y_pred, .5)  # get shot result with a threshold
+            y_pred, .5)  # get shot result by a threshold
         shots_pred_disrurption.append(predicted_disruption)
         shots_pred_disruption_time.append(predicted_disruption_time)
 
@@ -190,7 +190,6 @@ if __name__ == '__main__':
         temp_test_result = Result('./_temp_test/temp_result.csv')
         temp_test_result.lucky_guess_threshold = .8
         temp_test_result.tardy_alarm_threshold = .001
-        # temp_test_result.ignore_thresholds = True
         temp_test_result.add(shot_nos, shots_pred_disrurption,
                              shots_pred_disruption_time)
         temp_test_result.get_all_truth_from_file_repo(test_file_repo)
