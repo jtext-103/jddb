@@ -79,4 +79,5 @@ class MDSDumper:
                     del data_dict_temp
                 else:
                     continue
+            self.conn.closeAllTrees()
             self.conn.disconnect()
