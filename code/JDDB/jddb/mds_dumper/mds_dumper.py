@@ -42,7 +42,7 @@ class MDSDumper:
             shot = int(shot_list[i])
             try:
                 self.conn = self.connect()
-            except:
+            except ConnectionError:
                 warnings.warn("Connect Error", category=UserWarning)
                 delay_time.sleep(5)
                 warnings.warn("Delay 5s and reconnect", category=UserWarning)
@@ -50,8 +50,11 @@ class MDSDumper:
             i += 1
             try:
                 self.conn.openTree(self.tree_name, shot=shot)
-            except ConnectionError("Could not open the tree of shot {}".format(shot)):
-                raise ConnectionError
+            except ConnectionError:
+                warnings.warn("Could not open the tree of shot {}".format(shot), category=UserWarning)
+                delay_time.sleep(5)
+                warnings.warn("Delay 5s and reconnect", category=UserWarning)
+                continue
             file_repo.create_shot(shot)
             exist_tag_list = file_repo.get_tag_list(shot)
             for tag in tag_list:
@@ -61,7 +64,8 @@ class MDSDumper:
                         time_raw = np.array(self.conn.get(r'DIM_OF({})'.format(tag)))
                     except ValueError:
                         warnings.warn("Could not read data from {}".format(tag), category=UserWarning)
-                        continue
+                        data_raw = []
+                        time_raw = []
                     fs = len(time_raw) / (time_raw[-1] - time_raw[0]) if len(time_raw) > 1 else 0
                     st = time_raw[0] if len(time_raw) > 1 else 0
                     data_dict_temp = dict()
