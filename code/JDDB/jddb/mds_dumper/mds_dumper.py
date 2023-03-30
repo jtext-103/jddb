@@ -61,13 +61,10 @@ class MDSDumper:
                 if tag not in exist_tag_list or overwrite:
                     try:
                         data_raw = np.array(self.conn.get(tag))
-                    except ValueError:
+                        time_raw = np.array(self.conn.get(r'DIM_OF({})'.format(tag)))
+                    except:
                         warnings.warn("Could not read data from {}".format(tag), category=UserWarning)
                         data_raw = []
-                    try:
-                        time_raw = np.array(self.conn.get(r'DIM_OF({})'.format(tag)))
-                    except ValueError:
-                        warnings.warn("Could not read data from {}".format(tag), category=UserWarning)
                         time_raw = []
                     fs = len(time_raw) / (time_raw[-1] - time_raw[0]) if len(time_raw) > 1 else 0
                     st = time_raw[0] if len(time_raw) > 1 else 0
