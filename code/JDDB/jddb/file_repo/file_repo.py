@@ -105,12 +105,11 @@ class FileRepo:
         if not os.path.exists(parent_dir):
             os.makedirs(parent_dir)
         try:
-            hdf5_file = h5py.File(file_path, 'r+')
+            hdf5_file = h5py.File(file_path, 'a')
             hdf5_file.close()
-        except:
-            hdf5_file = h5py.File(file_path, 'x')
-            hdf5_file.close()
-        return file_path
+            return file_path
+        except OSError:
+            return ""
 
     def get_files(self, shot_list: List[int] = None, create_empty=False) -> dict:
         """
