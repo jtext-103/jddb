@@ -189,8 +189,8 @@ class FileRepo:
             for tag in tag_list:
                 try:
                     data_dict[tag] = file.get(self._data_group_name).get(tag)[()]
-                except ValueError("{}".format(tag)):
-                    raise ValueError
+                except ValueError:
+                    raise ValueError("{}".format(tag))
             file.close()
             return data_dict
         else:
@@ -238,7 +238,7 @@ class FileRepo:
             else:
                 dataset = data_group.get(tag)
                 if dataset is None:
-                    raise KeyError("{} does not exist in \"" + self._data_group_name + "\"".format(tag))
+                    raise KeyError("{} does not exist in \"".format(tag) + self._data_group_name + "\"")
                 else:
                     if attribute_list is None:
                         attribute_list = dataset.attrs.keys()
@@ -359,7 +359,7 @@ class FileRepo:
 
         """
         file_path = self.get_file(shot_no)
-        file = self._open_file(file_path, 'r+')
+        file = self._open_file(file_path, 'a')
         if file:
             data_group = file.get(self._data_group_name)
             if data_group is None:
@@ -367,13 +367,13 @@ class FileRepo:
             else:
                 dataset = data_group.get(tag)
                 if dataset is None:
-                    raise KeyError("{} does not exist in \"" + self._data_group_name + "\"".format(tag))
+                    raise KeyError("{} does not exist in \"".format(tag) + self._data_group_name + "\"")
                 else:
                     for each_attr in attribute_list:
                         if each_attr not in dataset.attrs.keys():
                             warnings.warn("{} does not exist.".format(each_attr), category=UserWarning)
                         else:
-                            dataset.attrs.__delete__(each_attr)
+                            dataset.attrs.__delitem__(each_attr)
             file.close()
         else:
             raise OSError("Invalid path given.")
@@ -390,7 +390,7 @@ class FileRepo:
         Returns: None
 
         """
-        file = self._open_file(file_path, 'r+')
+        file = self._open_file(file_path, 'a')
         if file:
             meta_group = file.get(self._meta_group_name)
             if meta_group is None:
@@ -497,7 +497,7 @@ class FileRepo:
             else:
                 dataset = data_group.get(tag)
                 if dataset is None:
-                    raise KeyError("{} does not exist in \"" + self._data_group_name + "\"".format(tag))
+                    raise KeyError("{} does not exist in \"".format(tag) + self._data_group_name + "\"")
                 else:
                     attribute_list = attribute_dict.keys()
                     for each_attr in attribute_list:
@@ -539,7 +539,7 @@ class FileRepo:
                     if overwrite:
                         self.remove_labels_file(file_path, [label])
                     else:
-                        warnings.warn("{} already exist in" + self._meta_group_name + "group!".format(label), category=UserWarning)
+                        warnings.warn("{} already exist in".format(label) + self._meta_group_name + "group!", category=UserWarning)
                         continue
                 meta_group.create_dataset(label, data=label_dict[label])
             file.close()
