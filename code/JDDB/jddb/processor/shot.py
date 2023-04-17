@@ -146,19 +146,21 @@ class Shot(object):
             save_repo (FileRepo): file repo specified to save the shot. Default None.
         """
         if save_repo is not None and (save_repo.base_path != self.file_repo.base_path):
-            try:
+            output_path = save_repo.get_file(self.shot_no)
+            if output_path == "":
                 output_path = save_repo.create_shot(self.shot_no)
-            except OSError:
-                os.remove(save_repo.get_file(self.shot_no, ignore_none=True))
+            else:
+                os.remove(output_path)
                 output_path = save_repo.create_shot(self.shot_no)
+
             data_dict = dict()
             for tag in self.tags:
                 signal = self.get_signal(tag)
                 data_dict[tag] = signal.data
-            save_repo.write_data_file(output_path, data_dict)
+            save_repo.write_data_file(output_path, data_dict, overwrite=True)
             for tag in self.tags:
-                save_repo.write_attributes(self.shot_no, tag, self.get_signal(tag).attributes)
-            save_repo.write_label_file(output_path, self.labels)
+                save_repo.write_attributes(self.shot_no, tag, self.get_signal(tag).attributes, overwrite=True)
+            save_repo.write_label_file(output_path, self.labels, overwrite=True)
 
         else:
             existing_tags = self.file_repo.get_tag_list(self.shot_no)
@@ -172,4 +174,4 @@ class Shot(object):
             self.file_repo.write_data(self.shot_no, data_dict, overwrite=True)
             for tag, signal in self.__new_signals.items():
                 self.file_repo.write_attributes(self.shot_no, tag, signal.attributes, overwrite=True)
-            self.file_repo.write_label(self.shot_no, self.labels)
+            self.file_repo.write_label(self.shot_no, self.labels, overwrite=True)
