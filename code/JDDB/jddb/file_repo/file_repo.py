@@ -103,7 +103,10 @@ class FileRepo:
         file_path = self.get_file(shot_no, ignore_none=True)
         parent_dir = os.path.abspath(os.path.join(file_path, os.pardir))
         if not os.path.exists(parent_dir):
-            os.makedirs(parent_dir)
+            try:
+                os.makedirs(parent_dir)
+            except OSError:
+                pass
         try:
             hdf5_file = h5py.File(file_path, 'a')
             hdf5_file.close()
