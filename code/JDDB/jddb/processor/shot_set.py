@@ -6,6 +6,9 @@ from typing import Union, List
 import multiprocessing as mp
 from itertools import repeat
 import platform
+import logging
+from logging.handlers import QueueHandler, QueueListener
+from multiprocessing import Queue
 
 
 class ShotSet(object):
@@ -68,7 +71,7 @@ class ShotSet(object):
             return ShotSet(save_repo, shot_filter)
 
     def process(self, processor: BaseProcessor, input_tags: List[Union[str, List[str]]], output_tags: List[Union[str, List[str]]],
-                shot_filter: List[int] = None, save_repo: FileRepo = None) -> ShotSet:
+                shot_filter: List[int] = None, save_repo: FileRepo = None, processes: int = mp.cpu_count()) -> ShotSet:
         """Process one (or several) signal(s) of the shots within the shot filter.
 
         The changes WILL be saved immediately by calling this method.
@@ -79,6 +82,7 @@ class ShotSet(object):
             output_tags (List[Union[str, List[str]]]): output tag(s) to be processed.
             shot_filter (List[int]): shot files to be processed within the shot set. If None, process all shots within the shot set. Default None.
             save_repo (FileRepo): file repo specified to save the shots. Default None.
+            processes (int): the number of processes. Default logical CPU counts.
         Returns:
             ShotSet: a new instance (or the previous instance itself) according to the base path of save_repo.
         """
@@ -87,23 +91,36 @@ class ShotSet(object):
         if shot_filter is None:
             shot_filter = self.shot_list
         if platform.system() == 'Linux':
-            pool = mp.get_context('spawn').Pool(mp.cpu_count() // 2 - 1)
+            pool = mp.get_context('spawn').Pool(processes)
         else:
-            pool = mp.Pool(mp.cpu_count() // 2 - 1)
+            pool = mp.Pool(processes)
+
+        queue = mp.Manager().Queue(-1)
+        handler = QueueHandler(queue)
+        handler.setLevel(logging.ERROR)
+        listener = QueueListener(queue, logging.FileHandler('process_exceptions.log'))
+        listener.start()
 
         pool.starmap(
             self._parallel_task,
-            zip(shot_filter, repeat(processor), repeat(input_tags), repeat(output_tags), repeat(save_repo))
+            zip(repeat(queue), shot_filter, repeat(processor), repeat(input_tags), repeat(output_tags), repeat(save_repo))
         )
         pool.close()
         pool.join()
+        listener.stop()
+
         if save_repo is None and shot_filter == self.shot_list:
             return self
         else:
             return ShotSet(save_repo, shot_filter)
 
-    def _parallel_task(self, shot_no: int, processor: BaseProcessor, input_tags: list,
+    def _parallel_task(self, queue: Queue, shot_no: int, processor: BaseProcessor, input_tags: list,
                        output_tags: list, save_repo: FileRepo):
-        shot = Shot(shot_no, self.file_repo)
-        shot.process(processor, input_tags, output_tags)
-        shot.save(save_repo)
+        try:
+            shot = Shot(shot_no, self.file_repo)
+            shot.process(processor, input_tags, output_tags)
+            shot.save(save_repo)
+        except Exception as e:
+            error_message = f'Shot No: {shot_no} \nProcessor Type: {type(processor)} \nError Message: {e}'
+            queue.put(logging.LogRecord('process', logging.ERROR, '', 0, error_message, None, None))
+
