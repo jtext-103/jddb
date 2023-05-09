@@ -71,10 +71,14 @@ class MDSDumper:
                         attribute_dict[start_time_attr] = st
                         file_repo.write_data(shot, data_dict_temp, overwrite, create_empty=False)
                         file_repo.write_attributes(shot, tag, attribute_dict, overwrite)
+                        file_repo.write_label(shot, {tag: True}, True)
                         del attribute_dict
                         del data_dict_temp
-                    except ValueError:
+                    except Exception:
                         warnings.warn("Could not read data from {}".format(tag), category=UserWarning)
+                        file_repo.write_label(shot, {tag: False}, True)
+                        pass
+
                 else:
                     continue
             self.conn.closeAllTrees()

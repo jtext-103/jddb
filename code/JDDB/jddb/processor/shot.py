@@ -135,7 +135,7 @@ class Shot(object):
             else:
                 raise ValueError("Lengths of output tags and signals do not match!")
 
-    def save(self, save_repo: FileRepo = None):
+    def save(self, save_repo: FileRepo = None, data_type=None):
         """Save the shot to specified file repo.
 
         Save all changes done before to disk space.
@@ -144,6 +144,7 @@ class Shot(object):
 
         Args:
             save_repo (FileRepo): file repo specified to save the shot. Default None.
+            data_type: control the type of writen data
         """
         if save_repo is not None and (save_repo.base_path != self.file_repo.base_path):
             output_path = save_repo.get_file(self.shot_no)
@@ -157,7 +158,7 @@ class Shot(object):
             for tag in self.tags:
                 signal = self.get_signal(tag)
                 data_dict[tag] = signal.data
-            save_repo.write_data_file(output_path, data_dict, overwrite=True)
+            save_repo.write_data_file(output_path, data_dict, overwrite=True, data_type=data_type)
             for tag in self.tags:
                 save_repo.write_attributes(self.shot_no, tag, self.get_signal(tag).attributes, overwrite=True)
             save_repo.write_label_file(output_path, self.labels, overwrite=True)
@@ -171,7 +172,7 @@ class Shot(object):
 
             for tag, signal in self.__new_signals.items():
                 data_dict[tag] = signal.data
-            self.file_repo.write_data(self.shot_no, data_dict, overwrite=True)
+            self.file_repo.write_data(self.shot_no, data_dict, overwrite=True, data_type=data_type)
             for tag, signal in self.__new_signals.items():
                 self.file_repo.write_attributes(self.shot_no, tag, signal.attributes, overwrite=True)
             self.file_repo.write_label(self.shot_no, self.labels, overwrite=True)

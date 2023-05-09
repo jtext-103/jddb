@@ -103,10 +103,7 @@ class FileRepo:
         file_path = self.get_file(shot_no, ignore_none=True)
         parent_dir = os.path.abspath(os.path.join(file_path, os.pardir))
         if not os.path.exists(parent_dir):
-            try:
-                os.makedirs(parent_dir)
-            except OSError:
-                pass
+            os.makedirs(parent_dir)
         try:
             hdf5_file = h5py.File(file_path, 'a')
             hdf5_file.close()
@@ -422,7 +419,7 @@ class FileRepo:
         file_path = self.get_file(shot_no)
         self.remove_labels_file(file_path, label_list)
 
-    def write_data_file(self, file_path: str, data_dict: dict, overwrite=False):
+    def write_data_file(self, file_path: str, data_dict: dict, overwrite=False, data_type=None):
         """
 
         Write a data dictionary in the data group in one shot file with a file path as input.
@@ -432,7 +429,7 @@ class FileRepo:
             data_dict: data_dict
                        --> data_dict{"tag": data}
             overwrite: True -> remove the existed tag, then write the new one
-
+            data_type: control the type of writen data
         Returns: None
 
         """
@@ -451,12 +448,15 @@ class FileRepo:
                     else:
                         warnings.warn("{} already exists.".format(tag), category=UserWarning)
                         continue
-                data_group.create_dataset(tag, data=data_dict[tag])
+                if data_type is None:
+                    data_group.create_dataset(tag, data=data_dict[tag])
+                else:
+                    data_group.create_dataset(tag, data=data_dict[tag], dtype=data_type)
             file.close()
         else:
             raise OSError("Invalid path given.")
 
-    def write_data(self, shot_no: int, data_dict: dict, overwrite=False, create_empty=True):
+    def write_data(self, shot_no: int, data_dict: dict, overwrite=False, create_empty=True, data_type=None):
         """
 
         Write a data dictionary in the data group in one shot file with a shot number as input.
@@ -467,7 +467,7 @@ class FileRepo:
                        --> data_dict{"tag": data}
             overwrite: True -> remove the existed tag, then write the new one
             create_empty: True -> create the shot file if the shot file does not exist before
-
+            data_type: control the type of writen data
         Returns: None
 
         """
@@ -475,7 +475,7 @@ class FileRepo:
             file_path = self.create_shot(shot_no)
         else:
             file_path = self.get_file(shot_no)
-        self.write_data_file(file_path, data_dict, overwrite)
+        self.write_data_file(file_path, data_dict, overwrite, data_type)
 
     def write_attributes(self, shot_no: int, tag: str, attribute_dict: dict, overwrite=False):
         """
@@ -584,3 +584,21 @@ class FileRepo:
             label_dict = meta_db.get_labels(shot)
             del label_dict['shot']
             self.write_label(shot, label_dict, overwrite)
+
+    def upload_meta(self, meta_db: MetaDB, shot_list: List[int] = None):
+        """
+
+        Sync labels to the meta group of the shot file from MetaDB.
+
+        Args:
+            meta_db: initialized object of MetaDB
+            shot_list: shot list
+
+        Returns: None
+
+        """
+        if shot_list is None:
+            shot_list = self.get_all_shots()
+        for shot in shot_list:
+            meta_db.update_labels(shot, self.read_labels(shot))
+
