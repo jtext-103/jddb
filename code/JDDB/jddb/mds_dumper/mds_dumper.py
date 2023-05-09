@@ -40,6 +40,7 @@ class MDSDumper:
             if i > len(shot_list) - 1:
                 break
             shot = int(shot_list[i])
+            print(r"Shot: {}".format(shot))
             try:
                 self.conn = self.connect()
             except ConnectionError:
@@ -83,3 +84,4 @@ class MDSDumper:
                     continue
             self.conn.closeAllTrees()
             self.conn.disconnect()
+
