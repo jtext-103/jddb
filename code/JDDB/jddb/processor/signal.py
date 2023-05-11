@@ -10,13 +10,15 @@ class Signal(object):
     Attributes:
         data (numpy.ndarray): raw data of the Signal instance.
         attributes (dict): necessary attributes of the Signal instance. Note that SampleRate and StartTime will be set default if not given.
-        tag (str): name of the signal.
+        tag (str): name of the signal. Default None
+        parent (Shot): the shot which the signal belongs to. Default None.
     """
 
-    def __init__(self, data: np.ndarray, attributes: dict, tag: str = None):
+    def __init__(self, data: np.ndarray, attributes: dict, tag: str = None, parent=None):
         self.data = data
         self.attributes = attributes
         self.tag = tag
+        self.parent = parent
 
         if 'SampleRate' not in self.attributes.keys():
             self.attributes['SampleRate'] = 1
