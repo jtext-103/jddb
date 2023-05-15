@@ -29,13 +29,22 @@ def matrix_build(shot_list, file_repo, tags):
     Returns: matrix of x and y
 
     """
-    x_set = np.empty([0, len(tags)-1])
+    x_set = np.empty([0, len(tags)])
     y_set = np.empty([0])
     for shot in shot_list:
+        shot = int(shot)
         x_data = file_repo.read_data(shot, tags)
+        y_data = file_repo.read_data(shot, ['alarm_tag'])
+        dis_label = file_repo.read_labels(shot, ['IsDisrupt'])
         res = np.array(list(x_data.values())).T
-        x_set = np.append(x_set, np.delete(res, 3, 1), axis=0)
-        y_set = np.append(y_set, res[:, 3], axis=0)
+        res_y = np.array(list(y_data.values())).T.flatten()
+        if dis_label['IsDisrupt'] == 1:
+            indices = np.where(res_y == 1)
+            x_set = np.append(x_set, res[indices], axis=0)
+            y_set = np.append(y_set, res_y[indices], axis=0)
+        else:
+            x_set = np.append(x_set, res, axis=0)
+            y_set = np.append(y_set, res_y, axis=0)
     return x_set, y_set
 
 # inference on shot
