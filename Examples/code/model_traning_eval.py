@@ -29,28 +29,23 @@ def matrix_build(shot_list, file_repo, tags):
     Returns: matrix of x and y
 
     """
-    x_set = np.empty([0, len(tags)])
+    x_set = np.empty([0, len(tags) - 1])
     y_set = np.empty([0])
     for shot in shot_list:
         shot = int(shot)
         x_data = file_repo.read_data(shot, tags)
         y_data = file_repo.read_data(shot, ['alarm_tag'])
-        dis_label = file_repo.read_labels(shot, ['IsDisrupt'])
+        x_data.pop('alarm_tag', None)
         res = np.array(list(x_data.values())).T
         res_y = np.array(list(y_data.values())).T.flatten()
-        if dis_label['IsDisrupt'] == 1:
-            indices = np.where(res_y == 1)
-            x_set = np.append(x_set, res[indices], axis=0)
-            y_set = np.append(y_set, res_y[indices], axis=0)
-        else:
-            x_set = np.append(x_set, res, axis=0)
-            y_set = np.append(y_set, res_y, axis=0)
+        x_set = np.append(x_set, res, axis=0)
+        y_set = np.append(y_set, res_y, axis=0)
     return x_set, y_set
 
 # inference on shot
 
 
-def get_shot_result(y_red, threshold_sample):
+def get_shot_result(y_red, threshold_sample, start_time):
     """
     get shot result by a threshold
     Args:
@@ -63,7 +58,7 @@ def get_shot_result(y_red, threshold_sample):
     binary_result = 1 * (y_pred >= threshold_sample)
     for k in range(len(binary_result) - 2):
         if np.sum(binary_result[k:k+3]) == 3:
-            predicted_dis_time = (k + 2) / 1000
+            predicted_dis_time = (k + 2) / 1000 + start_time
             predicted_dis = 1
             break
         else:
@@ -76,7 +71,7 @@ def get_shot_result(y_red, threshold_sample):
 if __name__ == '__main__':
 
     test_file_repo = FileRepo(
-        "..//FileRepo//ProcessedShots//$shot_2$XX//$shot_1$X//")
+        "..//FileRepo//ProcessedShots//$shot_2$00//$shot_1$0//")
     test_shot_list = test_file_repo.get_all_shots()
     tag_list = test_file_repo.get_tag_list(test_shot_list[0])
     is_disrupt = []
@@ -149,8 +144,9 @@ if __name__ == '__main__':
             y_pred)  # save sample results to a dict
 
     # using the sample reulst to predict disruption on shot, and save result to result file using result module.
+        time_dict = test_file_repo.read_labels(shot, ['StartTime'])
         predicted_disruption, predicted_disruption_time = get_shot_result(
-            y_pred, .5)  # get shot result by a threshold
+            y_pred, .5, time_dict['StartTime'])  # get shot result by a threshold
         shots_pred_disrurption.append(predicted_disruption)
         shots_pred_disruption_time.append(predicted_disruption_time)
 
@@ -190,8 +186,9 @@ if __name__ == '__main__':
         shots_pred_disruption_time = []
         for shot in test_shots:
             y_pred = sample_result[shot][0]
+            time_dict = test_file_repo.read_labels(shot, ['StartTime'])
             predicted_disruption, predicted_disruption_time = get_shot_result(
-                y_pred, threshold)
+                y_pred, threshold, time_dict['StartTime'])
             shots_pred_disrurption.append(predicted_disruption)
             shots_pred_disruption_time.append(predicted_disruption_time)
         # i dont save so the file never get created
