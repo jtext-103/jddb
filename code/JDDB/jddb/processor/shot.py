@@ -49,6 +49,7 @@ class Shot(object):
             tag (str): name of the signal to be added or modified.
             signal (Signal): the signal to be added or modified.
         """
+        signal.parent = self
         self.__new_signals[tag] = signal
 
     def remove_signal(self, tags: Union[str, List[str]], keep: bool = False):
@@ -91,7 +92,8 @@ class Shot(object):
             return self.__new_signals[tag]
         elif tag in self.__original_tags:
             return Signal(data=self.file_repo.read_data(self.shot_no, [tag])[tag],
-                          attributes=self.file_repo.read_attributes(self.shot_no, tag))
+                          attributes=self.file_repo.read_attributes(self.shot_no, tag),
+                          parent=self)
         else:
             raise ValueError("{} is not found in data.".format(tag))
 

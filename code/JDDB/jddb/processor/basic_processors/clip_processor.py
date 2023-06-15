@@ -23,6 +23,8 @@ class ClipProcessor(BaseProcessor):
             self._end_time = self.params[self._end_time_label]
         if self._end_time is None:
             self._end_time = signal.time[-1]
+        if self._start_time > self._end_time:
+            raise ValueError('Down time is earlier than start time.')
         clipped_data = signal.data[(self._start_time <= signal.time) & (signal.time <= self._end_time)]
         clipped_attributes = deepcopy(signal.attributes)
         start_time_idx = np.argmax(signal.time >= self._start_time)
