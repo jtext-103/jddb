@@ -85,3 +85,67 @@ class MDSDumper:
             self.conn.closeAllTrees()
             self.conn.disconnect()
 
+    def dump_tag(self, file_repo: FileRepo, shot_list: List[int], tag: str, time_tag=False, overwrite=False):
+        """
+
+            Dump data from MDSPlus into the hdf5 shot file
+                Args:
+                    file_repo: initialized object of FileRepo
+                    shot_list: shot list
+                    tag: tag
+                    time_tag: the tag of time axis
+                    overwrite: True -> remove the existed tag, then write the new one
+
+                Returns: None
+
+        """
+        if not time_tag:
+            time_tag = r'DIM_OF({})'.format(tag)
+        sample_rate_attr = 'SampleRate'
+        start_time_attr = 'StartTime'
+        i = int(0)
+        while True:
+            if i > len(shot_list) - 1:
+                break
+            shot = int(shot_list[i])
+            print(r"Shot: {}".format(shot))
+            try:
+                self.conn = self.connect()
+            except ConnectionError:
+                warnings.warn("Connect Error", category=UserWarning)
+                delay_time.sleep(5)
+                warnings.warn("Delay 5s and reconnect", category=UserWarning)
+                continue
+            i += 1
+            try:
+                self.conn.openTree(self.tree_name, shot=shot)
+            except ConnectionError:
+                warnings.warn("Could not open the tree of shot {}".format(shot), category=UserWarning)
+                delay_time.sleep(5)
+                warnings.warn("Delay 5s and reconnect", category=UserWarning)
+                continue
+            file_repo.create_shot(shot)
+            exist_tag_list = file_repo.get_tag_list(shot)
+            if tag not in exist_tag_list or overwrite:
+                try:
+                    data_raw = np.array(self.conn.get(tag))
+                    time_raw = np.array(self.conn.get(time_tag))
+                    fs = len(time_raw) / (time_raw[-1] - time_raw[0]) if len(time_raw) > 1 else 0
+                    st = time_raw[0] if len(time_raw) > 1 else 0
+                    data_dict_temp = dict()
+                    data_dict_temp[tag] = data_raw
+                    attribute_dict = dict()
+                    attribute_dict[sample_rate_attr] = fs
+                    attribute_dict[start_time_attr] = st
+                    file_repo.write_data(shot, data_dict_temp, overwrite, create_empty=False)
+                    file_repo.write_attributes(shot, tag, attribute_dict, overwrite)
+                    file_repo.write_label(shot, {tag: True}, True)
+                    del attribute_dict
+                    del data_dict_temp
+                except Exception:
+                    warnings.warn("Could not read data from {}".format(tag), category=UserWarning)
+                    file_repo.write_label(shot, {tag: False}, True)
+                    pass
+
+            else:
+                continue
