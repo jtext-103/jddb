@@ -4,7 +4,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.metrics import auc
-
+import matplotlib.font_manager as fm
 
 class Report:
     """Assign a str value to the header"""
@@ -121,15 +121,16 @@ class Report:
         fig = plt.figure()
         fig.tight_layout()
         plt.rcParams["figure.figsize"] = (10, 10)
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
+        plt.xlabel('False Positive Rate', fontsize='xx-large')
+        plt.ylabel('True Positive Rate', fontsize='xx-large')
         plt.plot(np.array(fpr), np.array(tpr_ordered), color='darkorange',
                  lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
         plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.0])
-        plt.title('Receiver operating characteristic')
-        plt.legend(loc="lower right")
+        plt.title('Receiver operating characteristic', fontsize='xx-large')
+        font_props = fm.FontProperties(size='x-large', weight='bold')
+        plt.legend(loc="lower right", prop=font_props)
         if roc_file_path:
             plt.savefig(os.path.join(roc_file_path, 'Receiver_operating_characteristic.png'), dpi=300)
         plt.show(block=True)
