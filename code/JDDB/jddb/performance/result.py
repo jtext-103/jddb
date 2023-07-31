@@ -96,8 +96,8 @@ class Result:
             the file will be saved in disk after all processing, else not
         """
 
-        self.result.loc[0, [self.TARDY_ALARM_THRESHOLD_H]] = self.lucky_guess_threshold
-        self.result.loc[0, [self.LUCKY_GUESS_THRESHOLD_H]] = self.tardy_alarm_threshold
+        self.result.loc[0, [self.TARDY_ALARM_THRESHOLD_H]] = self.tardy_alarm_threshold
+        self.result.loc[0, [self.LUCKY_GUESS_THRESHOLD_H]] = self.lucky_guess_threshold
         self.result.to_csv(self.csv_path, index=False)
 
     def add(self, shot_list: List[int], predicted_disruption: List[int], predicted_disruption_time: List[float]):
