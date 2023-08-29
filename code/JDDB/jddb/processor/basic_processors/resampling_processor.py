@@ -28,4 +28,4 @@ class ResamplingProcessor(BaseProcessor):
         resampled_attributes = deepcopy(signal.attributes)
         resampled_attributes['SampleRate'] = self._sample_rate
 
-        return Signal(data=f(new_time), attributes=resampled_attributes)
+        return Signal(data=f(new_time), attributes=resampled_attributes, parent=signal.parent)

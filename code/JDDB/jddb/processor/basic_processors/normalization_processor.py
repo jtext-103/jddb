@@ -23,4 +23,4 @@ class NormalizationProcessor(BaseProcessor):
         normalized_data = (signal.data - self._mean) / self._std
         normalized_data = np.clip(normalized_data, -10, 10)
 
-        return Signal(data=normalized_data, attributes=signal.attributes)
+        return Signal(data=normalized_data, attributes=signal.attributes, parent=signal.parent)

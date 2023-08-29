@@ -30,4 +30,4 @@ class ClipProcessor(BaseProcessor):
         start_time_idx = np.argmax(signal.time >= self._start_time)
         clipped_attributes['StartTime'] = signal.time[start_time_idx]
 
-        return Signal(data=clipped_data, attributes=clipped_attributes)
+        return Signal(data=clipped_data, attributes=clipped_attributes, parent=signal.parent)
