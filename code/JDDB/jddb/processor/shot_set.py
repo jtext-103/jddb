@@ -82,7 +82,7 @@ class ShotSet(object):
             output_tags (List[Union[str, List[str]]]): output tag(s) to be processed.
             shot_filter (List[int]): shot files to be processed within the shot set. If None, process all shots within the shot set. Default None.
             save_repo (FileRepo): file repo specified to save the shots. Default None.
-            processes (int): the number of processes. Default logical CPU counts.
+            processes (int): the number of processes. Default logical CPU counts. If processes is 0, multiprocessing is not used.
         Returns:
             ShotSet: a new instance (or the previous instance itself) according to the base path of save_repo.
         """
@@ -90,24 +90,39 @@ class ShotSet(object):
             raise ValueError("Lengths of input tags and output tags do not match.")
         if shot_filter is None:
             shot_filter = self.shot_list
-        if platform.system() == 'Linux':
-            pool = mp.get_context('spawn').Pool(processes)
+
+        if processes:
+            if platform.system() == 'Linux':
+                pool = mp.get_context('spawn').Pool(processes)
+            else:
+                pool = mp.Pool(processes)
+
+            queue = mp.Manager().Queue(-1)
+            handler = QueueHandler(queue)
+            handler.setLevel(logging.ERROR)
+            listener = QueueListener(queue, logging.FileHandler('process_exceptions.log'))
+            listener.start()
+
+            pool.starmap(
+                self._parallel_task,
+                zip(repeat(queue), shot_filter, repeat(processor), repeat(input_tags), repeat(output_tags), repeat(save_repo))
+            )
+            pool.close()
+            pool.join()
+            listener.stop()
+
         else:
-            pool = mp.Pool(processes)
-
-        queue = mp.Manager().Queue(-1)
-        handler = QueueHandler(queue)
-        handler.setLevel(logging.ERROR)
-        listener = QueueListener(queue, logging.FileHandler('process_exceptions.log'))
-        listener.start()
-
-        pool.starmap(
-            self._parallel_task,
-            zip(repeat(queue), shot_filter, repeat(processor), repeat(input_tags), repeat(output_tags), repeat(save_repo))
-        )
-        pool.close()
-        pool.join()
-        listener.stop()
+            for each_shot in shot_filter:
+                try:
+                    shot = self.get_shot(each_shot)
+                    shot.process(processor, input_tags, output_tags)
+                    shot.save(save_repo)
+                except Exception as e:
+                    error_message = f'Shot No: {each_shot} \nProcessor Type: {type(processor)} \nError Message: {e}'
+                    logging.basicConfig(filename='process_exceptions.log',
+                                        filemode='a',
+                                        format=error_message,
+                                        level=logging.ERROR)
 
         if save_repo is None and shot_filter == self.shot_list:
             return self
@@ -117,7 +132,7 @@ class ShotSet(object):
     def _parallel_task(self, queue: Queue, shot_no: int, processor: BaseProcessor, input_tags: list,
                        output_tags: list, save_repo: FileRepo):
         try:
-            shot = Shot(shot_no, self.file_repo)
+            shot = self.get_shot(shot_no)
             shot.process(processor, input_tags, output_tags)
             shot.save(save_repo)
         except Exception as e:
