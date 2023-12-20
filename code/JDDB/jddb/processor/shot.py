@@ -25,11 +25,11 @@ class Shot(object):
         try:
             self.__original_tags = file_repo.get_tag_list(self.shot_no)
         except ValueError:
-            self.__original_tags = None
+            self.__original_tags = list()
         try:
             self.labels = file_repo.read_labels(self.shot_no)
         except ValueError:
-            self.labels = None
+            self.labels = dict()
 
     @property
     def tags(self):
