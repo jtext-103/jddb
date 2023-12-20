@@ -172,7 +172,7 @@ class Shot(object):
             save_repo.write_label_file(output_path, self.labels, overwrite=True)
 
         else:
-            existing_tags = self.file_repo.get_tag_list(self.shot_no)
+            existing_tags = self.__original_tags
             tags_to_remove = [r_tag for r_tag in existing_tags if r_tag not in self.tags]
 
             self.file_repo.remove_data(self.shot_no, tags_to_remove)
