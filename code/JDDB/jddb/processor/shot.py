@@ -22,7 +22,10 @@ class Shot(object):
         self._file_repo = file_repo
         self._shot_no = shot_no
         self.__new_signals = dict()
-        self.__original_tags = file_repo.get_tag_list(self.shot_no)
+        try:
+            self.__original_tags = file_repo.get_tag_list(self.shot_no)
+        except ValueError:
+            self.__original_tags = None
         self.labels = file_repo.read_labels(self.shot_no)
 
     @property
