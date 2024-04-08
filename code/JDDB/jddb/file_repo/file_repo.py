@@ -22,7 +22,7 @@ class FileRepo:
     def base_path(self):
         return self._base_path
 
-    def get_file(self, shot_no: int, ignore_none: bool = False) -> str:
+    def get_file(self, shot_no: int, ignore_none: bool = False, include_filename: bool = False) -> str:
         """
 
         Get file path for one shot
@@ -31,11 +31,12 @@ class FileRepo:
         Args:
             shot_no: shot_no
             ignore_none: True -> even the shot file does exist, still return the file path
-
+            include_filename: -> give a choice that users could directly use file name as the base_path also with BM design
+                                i.e. "\\data\\jtext\\$shot_2$XX\\$shot_1$XX\\$shot$.json"
         Returns: file path
 
         """
-        file_path = replace_pattern(self.base_path, shot_no)
+        file_path = replace_pattern(self.base_path, shot_no, include_filename)
         if os.path.exists(file_path):
             return file_path
         else:
