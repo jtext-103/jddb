@@ -14,7 +14,7 @@ class Signal(object):
         parent (Shot): the shot which the signal belongs to. Default None.
     """
 
-    def __init__(self, data: np.ndarray, attributes: dict, tag: str = None, parent=None):
+    def __init__(self, data: np.ndarray, attributes: dict, tag: str = None, parent = None, dim:np.ndarray = None):
         self.data = data
         self.attributes = attributes
         self.tag = tag
@@ -28,13 +28,20 @@ class Signal(object):
             self.attributes['StartTime'] = 0
             warnings.warn("StartTime not in attributes. Set to 0.")
 
+        if dim:
+            self.attributes['Dim'] = dim
+
     @property
     def time(self):
         """
         Returns:
             numpy.ndarray: time axis of the Signal instance according to SampleRate and StartTime given in the attributes.
         """
-        start_time = self.attributes['StartTime']
-        sample_rate = self.attributes['SampleRate']
-        down_time = start_time + (len(self.data) - 1) / sample_rate
-        return np.linspace(start_time, down_time, len(self.data))
+        if 'Dim' in self.attributes.keys():
+            warnings.warn('This signal may be unevenly sampled.')
+            return self.attributes['Dim']
+        else:
+            start_time = self.attributes['StartTime']
+            sample_rate = self.attributes['SampleRate']
+            down_time = start_time + (len(self.data) - 1) / sample_rate
+            return np.linspace(start_time, down_time, len(self.data))
