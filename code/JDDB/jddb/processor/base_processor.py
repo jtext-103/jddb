@@ -41,3 +41,22 @@ class BaseProcessor(metaclass=ABCMeta):
             'init_args': self._init_args,
             'param': self.params
         }
+
+    @classmethod
+    def from_config(cls, processor_config: Dict):
+        """Instantiate a processor from given config.
+
+        Args:
+            processor_config: A dictionary that contains init_args (necessary), type and param of the processor instance.
+        Raises:
+            KeyError: if 'init_args' is not in processor_config keys.
+        Returns:
+            Instantiated processor.
+        """
+        if 'init_args' not in processor_config.keys():
+            raise KeyError('Config loaded does not contain \'init_args\'.')
+        else:
+            init_args = processor_config.get('init_args')
+            processor = cls(**init_args)
+
+        return processor
