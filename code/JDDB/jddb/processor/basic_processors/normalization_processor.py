@@ -4,7 +4,7 @@ import numpy as np
 
 class NormalizationProcessor(BaseProcessor):
     def __init__(self, std: float, mean: float):
-        super().__init__()
+        super().__init__(std=std, mean=mean)
         self._std = std
         self._mean = mean
 

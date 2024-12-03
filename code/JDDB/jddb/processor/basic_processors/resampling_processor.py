@@ -6,7 +6,7 @@ import numpy as np
 
 class ResamplingProcessor(BaseProcessor):
     def __init__(self, sample_rate: float):
-        super().__init__()
+        super().__init__(sample_rate=sample_rate)
         self._sample_rate = sample_rate
 
     def transform(self, signal: Signal) -> Signal:
