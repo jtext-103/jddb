@@ -30,6 +30,8 @@ class Shot(object):
             self.labels = file_repo.read_labels(self.shot_no)
         except ValueError:
             self.labels = dict()
+        except KeyError:
+            self.labels = dict()
 
     @property
     def tags(self):
