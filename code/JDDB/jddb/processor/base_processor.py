@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from .signal import Signal
-from typing import Tuple, Union
+from typing import Tuple, Union, Dict
 
 
 class BaseProcessor(metaclass=ABCMeta):
@@ -29,3 +29,15 @@ class BaseProcessor(metaclass=ABCMeta):
             Signal: new signal(s) processed.
         """
         raise NotImplementedError()
+
+    def to_config(self) -> Dict:
+        """Save instance information to a dictionary.
+
+        Returns:
+            A dictionary that contains type, init arguments and params of the instance.
+        """
+        return {
+            'type': self.__class__.__name__,
+            'init_args': self._init_args,
+            'param': self.params
+        }
