@@ -11,7 +11,8 @@ class BaseProcessor(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def __init__(self):
+    def __init__(self, **kwargs):
+        self._init_args = kwargs
         self.params = dict()
 
     @abstractmethod
