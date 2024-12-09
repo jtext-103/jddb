@@ -145,7 +145,7 @@ class Shot(object):
             else:
                 raise ValueError("Lengths of output tags and signals do not match!")
 
-    def save(self, save_repo: FileRepo = None, data_type=None):
+    def save(self, save_repo: FileRepo = None, data_type=None, save_updated_only: bool = False):
         """Save the shot to specified file repo.
 
         Save all changes done before to disk space.
@@ -155,7 +155,12 @@ class Shot(object):
         Args:
             save_repo (FileRepo): file repo specified to save the shot. Default None.
             data_type: control the type of writen data
+            save_updated_only (bool): whether to save updated signals only. Default False.
         """
+        if save_updated_only:
+            tags_to_save = self.__new_signals.keys()
+        else:
+            tags_to_save = self.tags
         if save_repo is not None and (save_repo.base_path != self.file_repo.base_path):
             output_path = save_repo.get_file(self.shot_no)
             if output_path == "":
@@ -165,17 +170,20 @@ class Shot(object):
                 output_path = save_repo.create_shot(self.shot_no)
 
             data_dict = dict()
-            for tag in self.tags:
+            for tag in tags_to_save:
                 signal = self.get_signal(tag)
                 data_dict[tag] = signal.data
             save_repo.write_data_file(output_path, data_dict, overwrite=True, data_type=data_type)
-            for tag in self.tags:
+            for tag in tags_to_save:
                 save_repo.write_attributes(self.shot_no, tag, self.get_signal(tag).attributes, overwrite=True)
             save_repo.write_label_file(output_path, self.labels, overwrite=True)
 
         else:
-            existing_tags = self.__original_tags
-            tags_to_remove = [r_tag for r_tag in existing_tags if r_tag not in self.tags]
+            existing_tags = file_repo.get_tag_list(self.shot_no)
+            if save_updated_only:
+                tags_to_remove = [r_tag for r_tag in existing_tags if r_tag not in self.__new_signals.keys()]
+            else:
+                tags_to_remove = [r_tag for r_tag in existing_tags if r_tag not in self.tags]
 
             if len(tags_to_remove):
                 self.file_repo.remove_data(self.shot_no, tags_to_remove)
