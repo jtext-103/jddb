@@ -179,7 +179,7 @@ class Shot(object):
             save_repo.write_label_file(output_path, self.labels, overwrite=True)
 
         else:
-            existing_tags = file_repo.get_tag_list(self.shot_no)
+            existing_tags = self.file_repo.get_tag_list(self.shot_no)
             if save_updated_only:
                 tags_to_remove = [r_tag for r_tag in existing_tags if r_tag not in self.__new_signals.keys()]
             else:
