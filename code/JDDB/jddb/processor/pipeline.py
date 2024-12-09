@@ -111,7 +111,7 @@ class Pipeline:
 
         return cls.from_config(pipeline_config=pipeline_config, processor_registry=processor_registry)
 
-    def process_by_shot(self, shot: Shot, save_repo: FileRepo = None):
+    def process_by_shot(self, shot: Shot, save_repo: FileRepo = None, save_updated_only: bool = False):
         logger = logging.getLogger('single_process')
         logger.setLevel(logging.ERROR)
         if not logger.hasHandlers():
@@ -133,10 +133,10 @@ class Pipeline:
                 )
                 logger.error(msg=error_message, exc_info=None)
 
-        shot.save(save_repo)
+        shot.save(save_repo, save_updated_only=save_updated_only)
 
     def process_by_shotset(self, shotset: ShotSet, processes: int = mp.cpu_count() - 1,
-                           shot_filter: List[int] = None, save_repo: FileRepo = None):
+                           shot_filter: List[int] = None, save_repo: FileRepo = None, save_updated_only: bool = False):
         """Process all shots in a ShotSet."""
         if shot_filter is None:
             shot_filter = shotset.shot_list
@@ -155,8 +155,8 @@ class Pipeline:
                 FileHandler('./process_exceptions.log', mode="a")
             )
             listener.start()
-            pool.map(partial(self._subprocess_task_in_shotset, queue=queue, shot_set=shotset, save_repo=save_repo),
-                     shot_filter)
+            pool.map(partial(self._subprocess_task_in_shotset, queue=queue, shot_set=shotset, save_repo=save_repo,
+                             save_updated_only=save_updated_only), shot_filter)
             pool.close()
             pool.join()
             listener.stop()
@@ -165,7 +165,8 @@ class Pipeline:
                 shot = shotset.get_shot(shot_no)
                 self.process_by_shot(shot, save_repo=save_repo)
 
-    def _subprocess_task_in_shotset(self, shot_no: int, queue: Queue, shot_set: ShotSet, save_repo: FileRepo = None):
+    def _subprocess_task_in_shotset(self, shot_no: int, queue: Queue, shot_set: ShotSet, save_repo: FileRepo = None,
+                                    save_updated_only: bool = False):
         single_shot = shot_set.get_shot(shot_no)
         for i, step in enumerate(self.steps):
             try:
@@ -182,4 +183,4 @@ class Pipeline:
                 queue.put(
                     logging.LogRecord('multi_process', logging.ERROR, '', 0, error_message, exc_info=None, args=None))
 
-        single_shot.save(save_repo)
+        single_shot.save(save_repo=save_repo, save_updated_only=save_updated_only)
