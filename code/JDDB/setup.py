@@ -11,6 +11,7 @@ setup(
         'h5py',
         'pymongo',
         'scikit-learn',
-        'matplotlib'
+        'matplotlib',
+        'pyyaml'
     ],
 )
