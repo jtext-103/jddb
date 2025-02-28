@@ -9,7 +9,7 @@ import multiprocessing as mp
 from multiprocessing import Queue
 from logging.handlers import QueueHandler, QueueListener
 from logging import FileHandler
-from datetime import datetime
+
 class Step:
     def __init__(self, processor: BaseProcessor, input_tags: List[Union[str, List[str]]],
                  output_tags: List[Union[str, List[str]]]):
@@ -164,18 +164,15 @@ class Pipeline:
             for shot_no in shot_filter:
                 shot = shotset.get_shot(shot_no)
                 self.process_by_shot(shot, save_repo=save_repo)
-                print("Shot No: ", shot_no, " is processed.")
 
     def _subprocess_task_in_shotset(self, shot_no: int, queue: Queue, shot_set: ShotSet, save_repo: FileRepo = None,
                                     save_updated_only: bool = False):
         single_shot = shot_set.get_shot(shot_no)
-        time_info = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         for i, step in enumerate(self.steps):
             try:
                 step.execute(single_shot)
             except Exception as e:
                 error_message = (
-                    f"Time: {time_info}\n"
                     f"Shot No: {shot_no}\n"
                     f"Pipeline Step: {i + 1}\n"
                     f"Processor Type: {type(step.processor).__name__}\n"
@@ -187,4 +184,3 @@ class Pipeline:
                     logging.LogRecord('multi_process', logging.ERROR, '', 0, error_message, exc_info=None, args=None))
 
         single_shot.save(save_repo=save_repo, save_updated_only=save_updated_only)
-        print("Shot No: ", shot_no, " is processed.")
