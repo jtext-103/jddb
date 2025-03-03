@@ -12,19 +12,16 @@ class BaseExtractor(ABC):
             config_file_path (str): Path to the configuration file.
         """
         self.config_file_path = config_file_path
-        self.config = self.load_config(self.config_file_path)
+        self.config = self.load_config()
 
-    def load_config(self, config_file_path: str):
+    def load_config(self):
         """
         Loads the configuration file from the specified path.
-
-        Args:
-            config_file_path (str): Path to the configuration file.
 
         Returns:
             dict: The loaded configuration as a dictionary.
         """
-        with open(config_file_path, 'r') as f:
+        with open(self.config_file_path, 'r') as f:
             return json.load(f)
 
     @abstractmethod
