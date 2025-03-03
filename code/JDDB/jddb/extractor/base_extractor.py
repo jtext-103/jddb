@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 import json
-from ..processor import Step
+from ..processor import Step,Pipeline
 
 class BaseExtractor(ABC):
     def __init__(self, config_file_path: str):
@@ -35,7 +35,7 @@ class BaseExtractor(ABC):
         pass
 
     @abstractmethod
-    def make_pipeline(self):
+    def make_pipeline(self)->Pipeline:
         """
         Abstract method that must be implemented by subclasses to create a specific pipeline.
 
